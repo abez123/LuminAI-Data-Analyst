@@ -1,10 +1,8 @@
 from fastapi import APIRouter
+from .routes.hello_router import hello_router  # Correct import of the hello router
 
-# Initialize the main API router
+# Create the main API router
 api_router = APIRouter()
 
-# Import and include submodules (routes)
-from .routes import api_router as routes_router
-
-# Include route modules in the main API router
-api_router.include_router(routes_router)
+# Include the hello router in the main API router
+api_router.include_router(hello_router)
