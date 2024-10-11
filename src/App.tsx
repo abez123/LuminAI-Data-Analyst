@@ -1,12 +1,12 @@
-// import { useState } from 'react'
-// import reactLogo from './assets/react.svg'
-// import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter as Router } from 'react-router-dom';
+import AppRoutes from './Router'; // Import the routes
 
 const App = () => {
-  console.log("App component rendered");
-  return <div>Hello, World!</div>;
+  return (
+    <Router>
+      <AppRoutes />
+    </Router>
+  );
 };
 
-
-export default App
+export default App;
