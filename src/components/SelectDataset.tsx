@@ -7,7 +7,7 @@ const SelectDataset = () => {
     const [selectedDataSource, setSelectedDataSource] = useState('');
 
   return (
-    <div className='mx-auto my-auto'>
+    <div className='mx-auto mb-24'>
     <h1 className={`text-center text-2xl font-bold text-navy-800`}>
       Have Something In Mind?
     </h1>

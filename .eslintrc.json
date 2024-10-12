@@ -1,15 +1,40 @@
 {
-    "root": true,
-    "ignorePatterns": ["node_modules", "dist"],
-    "plugins": ["@typescript-eslint"],
-    "parser": "@typescript-eslint/parser",
-    "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
-    "parserOptions": {
-      "ecmaVersion": 2020,
-      "sourceType": "module",
-      "project": "./tsconfig.json"
-    },
-    "rules": {
-      "@typescript-eslint/no-unused-vars": "error"
-    }
+  "root": true,
+  "ignorePatterns": ["node_modules", "dist"],
+  "plugins": ["@typescript-eslint", "prettier"],
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module",
+    "project": "./tsconfig.json"
+  },
+  "rules": {
+    "prettier/prettier": ["error", {
+      "endOfLine": "auto",
+      "printWidth": 120,
+      "singleQuote": true,
+      "tabWidth": 2,
+      "trailingComma": "all"
+    }],
+    "@typescript-eslint/no-unused-vars": "error",
+    "constructor-super": "off",
+    "@typescript-eslint/no-empty-function": "error",
+    "@typescript-eslint/no-inferrable-types": "error",
+    "react/react-in-jsx-scope": "error",
+    "react/prop-types": "error",
+    "react/display-name": "error",
+    "react/function-component-definition": ["error", {
+      "namedComponents": "function-declaration",
+      "unnamedComponents": "function-expression"
+    }],
+    "@typescript-eslint/explicit-module-boundary-types": "error",
+    "@typescript-eslint/no-non-null-assertion": "error",
+    "@typescript-eslint/no-unnecessary-type-arguments": "error"
   }
+}
