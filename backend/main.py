@@ -18,6 +18,7 @@ app = FastAPI()
 # Include API routes
 app.include_router(api_router)
 
+
 @app.get("/")
 def read_root():
     return {"message": "Hello, Lumin API is running!"}

@@ -1,6 +1,10 @@
 fastapi
+sqlalchemy
 uvicorn
 pydantic
+pydantic[email]
+passlib
+pyjwt
 python-dotenv
 pytest
 langchain
@@ -8,3 +12,6 @@ langgraph
 langchain-openai
 langchain-groq
 langchain-community
+autopep8
+prettier
+coloredlogs
