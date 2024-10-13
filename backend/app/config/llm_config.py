@@ -13,5 +13,8 @@ class LLM:
     def ollama():
         pass
 
+    def get_llm():
+        pass
+
     def invoke():
         pass
