@@ -57,7 +57,6 @@ class DB:
 
                 # Get the columns for the specified table
                 columns = inspector.get_columns(table_name)
-
                 # Collect column information
                 for column in columns:
                     schema_info["schema"].append({

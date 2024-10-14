@@ -1,5 +1,5 @@
 from typing import Dict
-from string import Template
+from langchain_core.prompts import ChatPromptTemplate
 
 graph_prompt_templates: Dict[str, Dict[str, str]] = {
     "bar": {
@@ -65,13 +65,13 @@ graph_prompt_templates: Dict[str, Dict[str, str]] = {
     }
 }
 
-# Usage example:
-def get_prompt(graph_type: str, question: str, data: str) -> Dict[str, str]:
+
+def get_prompt(graph_type: str) -> Dict[str, str]:
     if graph_type not in graph_prompt_templates:
         raise ValueError(f"Unknown graph type: {graph_type}")
-    
+
     template = graph_prompt_templates[graph_type]
-    return {
-        "system": template["system"],
-        "human": Template(template["human"]).substitute(question=question, data=data)
-    }
+    return ChatPromptTemplate.from_messages([
+        ("system", template["system"]),
+        ("human", template["human"]),
+    ])
