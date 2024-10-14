@@ -145,10 +145,29 @@ class SQLAgent:
 
     def format_visualization_data(self, state: Dict[str, Any]) -> Dict[str, Any]:
         logger.info("========= format_visualization_data ========")
+
+        required_keys = ["question", "query_result",
+                         "recommended_visualization"]
+        missing_keys = [key for key in required_keys if key not in state]
+        if missing_keys:
+            raise ValueError(
+                f"Missing required keys in state: {', '.join(missing_keys)}")
+
         question = state['question']
         results = state['query_result']
         recommended_visualization = state['recommended_visualization']
-        pass
+
+        if results == "NOT_RELEVANT":
+            return {"answer": "Sorry, I can only give answers relevant to the database."}
+
+        if recommended_visualization == "none":
+            return {"formatted_data_for_visualization": None}
+
+        prompt = get_prompt(recommended_visualization)
+        chain = prompt | self.llm | self.json_parser
+        response = chain.invoke({"question": question, "data": results})
+
+        return {"formatted_data_for_visualization": response}
 
 
 # class BaseFormatter(ABC):
