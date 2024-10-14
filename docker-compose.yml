@@ -4,7 +4,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.backend
       target: backend-dev
     container_name: lumin-backend
     volumes:
@@ -19,7 +19,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.frontend
       target: frontend-dev
     container_name: lumin-frontend
     volumes:
@@ -27,7 +27,7 @@ services:
       - ./public:/app/public  # Mount public directory
       - /app/node_modules  # To ensure node_modules are not overwritten
     ports:
-      - "5174:5174"  # Vite dev server port
-    command: npm run dev  # Run Vite dev server for hot-reloading
+      - "3000:3000"
+    command: npm run dev
     depends_on:
       - backend  # Ensures the backend service is running

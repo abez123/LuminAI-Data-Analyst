@@ -8,6 +8,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Skip authentication for public paths like /login, /signup
         if request.url.path in [
+            "/",
             "/docs", 
             "/openapi.json",
             "/api/v1/user/login", 
