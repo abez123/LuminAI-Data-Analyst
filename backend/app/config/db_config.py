@@ -17,20 +17,18 @@ class DB:
         self.engine = create_engine(db_url)
         self.session = sessionmaker(bind=self.engine)
 
-    def execute_query(self, query: str, params: dict = None) -> list:
-        """
-        Execute a SQL query.
-
-        Args:
-            query (str): SQL query
-            params (dict): Query parameters (optional)
-
-        Returns:
-            list: Query results
-        """
-        with self.engine.connect() as conn:
-            result = conn.execute(text(query), params)
-            return result.fetchall()
+    def execute_query(self, query: str) -> list:
+        print("======== execute_query ========")
+        with self.session() as session:
+            result = session.execute(text(query))
+            # return result
+            if result.returns_rows:
+                # Convert RowProxy to dict
+                return [row for row in result.fetchall()]
+            else:
+                # For non-SELECT queries, commit the transaction and return an empty list
+                session.commit()
+                return []
 
     def create_session(self) -> Session:
         """

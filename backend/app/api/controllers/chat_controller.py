@@ -2,7 +2,9 @@ from app.langgraph.prompt_templates.graph_prompts import get_prompt
 from app.langgraph.agents.sql_agent import SQLAgent
 from app.config.llm_config import LLM
 from app.config.db_config import DB
+from app.langgraph.workflows.sql_workflow import WorkflowManager
 from fastapi.responses import JSONResponse
+from fastapi.responses import StreamingResponse
 
 llm_instance = LLM()
 db = DB(db_url="sqlite:///./lumin.db")
@@ -12,36 +14,21 @@ def ask_question():
     try:
 
         llm = llm_instance.groq("gemma2-9b-it")
-        agent = SQLAgent(llm=llm)
         schema = db.get_schemas(table_names=[
                                 'olist_products_dataset', "olist_orders_dataset", "olist_customers_dataset", "olist_order_items_dataset"])
 
-        state = {
-            "question": "What percentage of orders are in each status?",
-            "schema": schema
-        }
-        parse_question = agent.get_parse_question(state)
-        state["parsed_question"] = parse_question["parsed_question"]
-        sql_query = agent.generate_sql_query(state)
-        state["sql_query"] = sql_query["sql_query"]
-        validated_query = agent.validate_and_fix_sql(state)
-        print(validated_query["sql_query"])
-        query_result = db.execute_query(validated_query["sql_query"])
-        state["query_result"] = query_result
-        formatted_res = agent.format_results(state)
-        print("===== formatted_res ===== :", formatted_res)
-        choose_visualization = agent.choose_visualization(state)
-        print("===== choose_visualization ===== :", choose_visualization)
-        state["recommended_visualization"] = choose_visualization["recommended_visualization"]
-        formatted_visualization = agent.format_visualization_data(state)
+        workflow = WorkflowManager(llm, db)
+        app = workflow.create_workflow().compile()
 
-        return {
-            "question": state["question"],
-            "answer": formatted_res["answer"],
-            "sql_query": validated_query["sql_query"],
-            "choose_visualization": choose_visualization["recommended_visualization"],
-            "formatted_visualization": formatted_visualization
-        }
+        # Define a generator to stream the data from LangGraph
+        def event_stream():
+            for event in app.stream({"question": "What percentage of orders are in each status?", "schema": schema}):
+                for value in event.values():
+                    # Yield the streamed data to the client
+                    yield f"data: {value}\n\n"
+
+        # Return the streaming response using event_stream generator
+        return StreamingResponse(event_stream(), media_type="text/event-stream")
 
     except Exception as e:
         # Catch all other errors and raise HTTP exception
