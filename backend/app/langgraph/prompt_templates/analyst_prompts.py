@@ -1,14 +1,14 @@
 from langchain_core.prompts import ChatPromptTemplate
 
 get_schema_insights_prompt = ChatPromptTemplate.from_messages([
-        ("system", '''
+    ("system", '''
             You are an expert data analyst tasked with analyzing SQL databases. Your goal is to interpret user questions, understand the provided schema, and identify relevant tables and columns.
 
             Instructions:
             1. Analyze the user question and database schema to identify relevant tables and columns.
             2. Set "is_relevant" to false if the question is not applicable to the database or lacks sufficient information for an answer.
             3. Focus on columns with meaningful nouns (e.g., names, entities) and exclude non-noun columns (e.g., IDs, numerical data) unless specifically relevant to the question.
-            4. Return the response in the following JSON format:
+            4. Return the response in the following JSON format, Please return the result in a valid JSON format. Do not use backticks, code blocks, or any extra characters:
             {{
             "is_relevant": boolean,
             "relevant_tables": [
@@ -36,8 +36,9 @@ get_schema_insights_prompt = ChatPromptTemplate.from_messages([
             - Include relevant columns like "team_name", "goals_scored" if they exist in the schema.
 
     '''),
-        ("human", "===Database Schema:\n{schema}\n\n===User Question:\n{question}\n\nIdentify the relevant tables and columns based on the provided information:")
-    ])
+    ("human",
+     "===Database Schema:\n{schema}\n\n===User Question:\n{question}\n\nIdentify the relevant tables and columns based on the provided information:")
+])
 
 generate_sql_query_prompt = ChatPromptTemplate.from_messages([
     ("system", '''
@@ -141,7 +142,7 @@ generate_sql_query_prompt = ChatPromptTemplate.from_messages([
     - For queries with labels: `[[label, x, y]]`
 
     Just return the SQL query string based on the schema, question, and unique nouns provided.
-    '''), 
+    '''),
     ("human", '''===Database schema: {schema}
 
     ===User question: {question}
@@ -153,7 +154,7 @@ generate_sql_query_prompt = ChatPromptTemplate.from_messages([
 ])
 
 fix_sql_query_prompt = ChatPromptTemplate.from_messages([
-        ("system", '''
+    ("system", '''
     You are an AI assistant that validates and fixes SQL queries. Your task is to:
     1. Check if the SQL query is valid.
     2. Ensure all table and column names are correctly spelled and exist in the schema. All table and column names should be enclosed in backticks, especially if they contain spaces or special characters.
@@ -162,20 +163,20 @@ fix_sql_query_prompt = ChatPromptTemplate.from_messages([
     5. If there are any issues, fix them and provide the corrected SQL query.
     6. If no issues are found, return the original query.
 
-    Respond in JSON format with the following structure. Only respond with the JSON:
+    Only respond with the JSON, Please return the result in a valid JSON format. Do not use backticks, code blocks, or any extra characters, The format should be like this::
     {{
         "valid": boolean,
         "issues": string or null,
         "corrected_query": string
     }}
     '''),
-        ("human", '''===Database schema:
+    ("human", '''===Database schema:
     {schema}
 
     ===Generated SQL query:
     {sql_query}
 
-    Respond in JSON format with the following structure. Only respond with the JSON:
+    Respond in JSON format with the following structure. Only respond with the JSON Please return the result in a valid JSON format. Do not use backticks, code blocks, or any extra characters:
     {{
         "valid": boolean,
         "issues": string or null,
@@ -202,10 +203,10 @@ fix_sql_query_prompt = ChatPromptTemplate.from_messages([
     }}
                 
     '''),
-    ])
+])
 
 format_results_prompt = ChatPromptTemplate.from_messages([
-        ("system", '''
+    ("system", '''
     You are an AI assistant that converts database query results into a clear, concise human-readable response. Your goal is to provide a brief conclusion to the user's question based on the query results. 
     Instructions:
     1. Respond in one sentence.
@@ -213,11 +214,12 @@ format_results_prompt = ChatPromptTemplate.from_messages([
     3. Avoid using markdown or unnecessary formatting.
 
     '''),
-        ("human", "User question: {question}\n\nQuery results: {results}\n\nConclusion:")
-    ])
+    ("human",
+     "User question: {question}\n\nQuery results: {results}\n\nConclusion:")
+])
 
 get_visualization_prompt = ChatPromptTemplate.from_messages([
-        ("system", '''
+    ("system", '''
     You are an AI assistant recommending the best data visualizations. Based on the user's question, SQL query, and query results, suggest the most suitable graph or chart type.
 
     ### Chart Types:
@@ -241,13 +243,22 @@ get_visualization_prompt = ChatPromptTemplate.from_messages([
             recommended_visualization: string (bar | horizontal_bar | line | pie | scatter | none),
             reason: Brief explanation of your recommendation
          }}
+    Please return the result in a valid JSON format. Do not use backticks, code blocks, or any extra characters
     '''),
-        ("human", '''
+    ("human", '''
     User question: {question}
     SQL query: {sql_query}
     Query results: {results}
 
     Recommend a visualization:
         '''),
-    ])
+])
 
+conversational_prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are LUMIN, a data analyst. Your job is to help the user gain insights from their data. kindly ask the user to provide a more relevant question based on the dataset."),
+    ("human", '''
+    Question: {question}
+    
+    Please answer the question & kindly ask the user to ask a question that is more relevant to the selected data.
+    '''),
+])

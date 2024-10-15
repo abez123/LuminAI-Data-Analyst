@@ -10,7 +10,7 @@ llm_instance = LLM()
 db = DB(db_url="sqlite:///./lumin.db")
 
 
-def ask_question():
+def ask_question(question: str):
     try:
 
         llm = llm_instance.groq("gemma2-9b-it")
@@ -22,7 +22,7 @@ def ask_question():
 
         # Define a generator to stream the data from LangGraph
         def event_stream():
-            for event in app.stream({"question": "What percentage of orders are in each status?", "schema": schema}):
+            for event in app.stream({"question": question, "schema": schema}):
                 for value in event.values():
                     # Yield the streamed data to the client
                     yield f"data: {value}\n\n"

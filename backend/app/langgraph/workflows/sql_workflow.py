@@ -48,6 +48,10 @@ class WorkflowManager:
     def run_sql_query(self, state: Dict[str, Any]) -> Dict[List, Any]:
         print("========== run_sql_query ==========")
         query = state['sql_query']
+        if query == "NOT_RELEVANT":
+            return {"query_result": []}
+
+        print("SQL QUERY :", query)
         result = self.db.execute_query(query)
         # Convert RowProxy to dict
         return {"query_result": result}
@@ -68,9 +72,19 @@ class WorkflowManager:
         workflow.add_node("format_data_for_visualization",
                           self.sql_agent.format_visualization_data)
 
+        # Add a node for conversational LLM response if the question is irrelevant
+        workflow.add_node("conversational_response",
+                          self.sql_agent.conversational_response)
+
         # Define edges
         workflow.add_edge(START, "parse_question")
-        workflow.add_edge("parse_question", "generate_sql")
+
+        # Add conditional edge to check if the conversation should continue or end
+        workflow.add_conditional_edges(
+            "parse_question",  # Start after parsing question
+            self.should_continue  # Conditional function to determine the next node
+        )
+
         workflow.add_edge("generate_sql", "validate_and_fix_sql")
         workflow.add_edge("validate_and_fix_sql", "execute_sql")
         workflow.add_edge("execute_sql", "format_results")
@@ -79,8 +93,21 @@ class WorkflowManager:
                           "format_data_for_visualization")
         workflow.add_edge("format_data_for_visualization", END)
         workflow.add_edge("format_results", END)
+        # End the workflow after conversational response
+        workflow.add_edge("conversational_response", END)
 
         return workflow
+
+    def should_continue(self, state: Dict) -> str:
+        """Determine the next step based on the relevance of the question."""
+        parsed_question = state['parsed_question']
+
+        # If the question is not relevant, switch to the conversational LLM
+        if not parsed_question.get("is_relevant", True):
+            return "conversational_response"
+
+        # Otherwise, proceed with the SQL generation
+        return "generate_sql"
 
     def returnGraph(self):
         return self.create_workflow().compile()
