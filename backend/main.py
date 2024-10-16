@@ -2,9 +2,12 @@ from fastapi import FastAPI
 # from fastapi.middleware.cors import CORSMiddleware
 from app.api import api_router
 from app.api.middleware.auth_middleware import AuthMiddleware
+from app.api.schema.main import create_tables
 
 app = FastAPI()
 
+# Create required tables
+create_tables()
 # CORS setup (if frontend is hosted on a different domain)
 # origins = ["http://localhost:3000"]  # Replace with actual frontend domain
 

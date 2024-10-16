@@ -9,4 +9,7 @@ chat_router = APIRouter()
 @chat_router.post("/ask-question")
 async def ask_question(body: AskQuestion):
     # Call the controller function
+    # if document
+    # return
+    # else
     return chat_controller.ask_question(body.question)

@@ -1,5 +1,3 @@
-from app.langgraph.prompt_templates.graph_prompts import get_prompt
-from app.langgraph.agents.sql_agent import SQLAgent
 from app.config.llm_config import LLM
 from app.config.db_config import DB
 from app.langgraph.workflows.sql_workflow import WorkflowManager
@@ -7,12 +5,11 @@ from fastapi.responses import JSONResponse
 from fastapi.responses import StreamingResponse
 
 llm_instance = LLM()
-db = DB(db_url="sqlite:///./lumin.db")
 
 
 def ask_question(question: str):
     try:
-
+        db = DB(db_url="sqlite:///./lumin.db")
         llm = llm_instance.groq("gemma2-9b-it")
         schema = db.get_schemas(table_names=[
                                 'olist_products_dataset', "olist_orders_dataset", "olist_customers_dataset", "olist_order_items_dataset"])

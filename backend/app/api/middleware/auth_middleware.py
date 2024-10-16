@@ -4,16 +4,17 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.config.env import SECRET_KEY
 
+
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Skip authentication for public paths like /login, /signup
         if request.url.path in [
             "/",
-            "/docs", 
+            "/docs",
             "/openapi.json",
-            "/api/v1/user/login", 
-            "api/v1/user/signup"
-            ]:
+            "/api/v1/user/login",
+            "/api/v1/user/signup"
+        ]:
             response = await call_next(request)
             return response
 

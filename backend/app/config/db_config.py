@@ -15,7 +15,7 @@ class DB:
             db_url (str): Database URL
         """
         self.engine = create_engine(db_url)
-        self.session = sessionmaker(bind=self.engine)
+        self.session = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
 
     def execute_query(self, query: str) -> list:
         print("======== execute_query ========")

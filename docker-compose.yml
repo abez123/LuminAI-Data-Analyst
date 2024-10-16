@@ -8,11 +8,11 @@ services:
       target: backend-dev
     container_name: lumin-backend
     volumes:
-      - ./backend:/app  # Mount backend code for hot-reloading
+      - ./backend:/app
     ports:
-      - "8000:8000"  # Map FastAPI port
+      - "8000:8000"
     environment:
-      - PYTHONPATH=/app  # Set the PYTHONPATH
+      - PYTHONPATH=/app
       - PYTHONDONTWRITEBYTECODE=1
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload  # Enable FastAPI hot-reloading
 
@@ -23,11 +23,24 @@ services:
       target: frontend-dev
     container_name: lumin-frontend
     volumes:
-      - ./src:/app/src  # Mount frontend src for hot-reloading
-      - ./public:/app/public  # Mount public directory
-      - /app/node_modules  # To ensure node_modules are not overwritten
+      - ./src:/app/src
+      - ./public:/app/public
+      - /app/node_modules
     ports:
       - "3000:3000"
     command: npm run dev
     depends_on:
-      - backend  # Ensures the backend service is running
+      - backend
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: lumin
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: lumin
+    ports:
+      - "5432:5432"
+
+networks:
+  default:
+    name: lumin-network
