@@ -33,7 +33,7 @@ services:
       - backend
 
   db:
-    image: postgres
+    image: ankane/pgvector
     environment:
       POSTGRES_USER: lumin
       POSTGRES_PASSWORD: root

@@ -5,13 +5,13 @@ Agent flow:
 Start Project:
 
 ```docker
-docker-compose up --build
+docker compose up --build
 ```
 
 Remove container:
 
 ```docker
-docker-compose down
+docker compose down
 ```
 
 ```python

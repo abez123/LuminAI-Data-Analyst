@@ -1,7 +1,13 @@
-from typing import List, Dict
+from typing import List, Dict, Any
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import sessionmaker, Session
+from langchain_huggingface import HuggingFaceEmbeddings
 from app.config.logging_config import get_logger
+from langchain.vectorstores import PGVector
+from fastapi import HTTPException
+from langchain.schema import Document
+import pandas as pd
+from app.config.env import (DATABASE_URL)
 
 logger = get_logger(__name__)
 
@@ -15,7 +21,8 @@ class DB:
             db_url (str): Database URL
         """
         self.engine = create_engine(db_url)
-        self.session = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        self.session = sessionmaker(
+            autocommit=False, autoflush=False, bind=self.engine)
 
     def execute_query(self, query: str) -> list:
         print("======== execute_query ========")
@@ -31,12 +38,6 @@ class DB:
                 return []
 
     def create_session(self) -> Session:
-        """
-        Create a new database session.
-
-        Returns:
-            Session: Database session
-        """
         return self.session()
 
     def get_schemas(self, table_names: List[str]) -> List[Dict]:
@@ -72,3 +73,59 @@ class DB:
         except Exception as e:
             logger.error(f"An error occurred: {e}")
             return []  # Return an empty list in case of an error
+
+    async def insert_dataframe(self, df: pd.DataFrame, table_name: str) -> Dict[str, Any]:
+        """Insert pandas DataFrame into database"""
+        try:
+            with self.session() as session:
+                df.to_sql(
+                    name=table_name,
+                    con=session.get_bind(),
+                    if_exists='replace',
+                    index=False
+                )
+                return {
+                    "message": f"Successfully inserted data into table {table_name}",
+                    "rows_processed": len(df)
+                }
+        except Exception as e:
+            logger.error(f"Data insertion error: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail="Failed to insert data into database")
+
+
+class VectorDB:
+    def __init__(self, connection_string: str):
+        """Initialize VectorDB with connection string"""
+        self.connection_string = connection_string
+        self.embedding = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-mpnet-base-v2"
+        )
+
+    def insert_data(self, documents: List[Document], collection_name: str) -> PGVector:
+        """Insert documents into vector store"""
+        try:
+            return PGVector.from_documents(
+                embedding=self.embedding,
+                documents=documents,
+                collection_name=collection_name,
+                connection_string=self.connection_string,
+            )
+        except Exception as e:
+            logger.error(f"Vector store insertion error: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail="Failed to insert documents into vector store")
+
+    def get_vector_store(self, collection_name: str) -> PGVector:
+        """Get existing vector store"""
+        try:
+            return PGVector(
+                connection_string=self.connection_string,
+                embedding_function=self.embedding,
+                collection_name=collection_name,
+                pre_delete_collection=False
+            )
+        except Exception as e:
+            logger.error(f"Vector store retrieval error: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail="Failed to retrieve vector store")

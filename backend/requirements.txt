@@ -2,6 +2,7 @@ fastapi
 pandas
 sqlalchemy
 psycopg2-binary
+pgvector
 uvicorn
 pydantic
 pydantic[email]
@@ -18,3 +19,7 @@ langchain-community
 autopep8
 prettier
 coloredlogs
+langchain-huggingface
+pypdf
+python-multipart
+alembic

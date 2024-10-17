@@ -1,22 +1,26 @@
-from fastapi import APIRouter, Request
+from fastapi import Depends, APIRouter, Request
 from app.api.controllers import auth_controller
 from app.api.validators.auth_validators import (UserCreate, UserLogin)
+from app.dependencies.database import get_db
+from app.config.db_config import DB
 
 # Create an instance of APIRouter
 auth_router = APIRouter()
 
 
 @auth_router.post("/signup")
-async def signup(user: UserCreate):
-    return auth_controller.signup(user)  # Call the controller function
+async def signup(user: UserCreate, db: DB = Depends(get_db)):
+    # Call the controller function
+    return auth_controller.signup(user, db)
 
 
 @auth_router.post("/login")
-async def login(user: UserLogin):
-    return auth_controller.login(user)  # Call the controller function
+async def login(user: UserLogin, db: DB = Depends(get_db)):
+    return auth_controller.login(user, db)  # Call the controller function
 
 
 @auth_router.get("/")
-async def get_user(request: Request):
+async def get_user(request: Request, db: DB = Depends(get_db)):
     user_id = request.state.user_id
-    return auth_controller.get_user(user_id)  # Call the controller function
+    # Call the controller function
+    return auth_controller.get_user(user_id, db)
