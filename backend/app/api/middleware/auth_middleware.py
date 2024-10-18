@@ -12,8 +12,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
             "/",
             "/docs",
             "/openapi.json",
-            "/api/v1/user/login",
-            "/api/v1/user/signup"
+            "/api/user/v1/login",
+            "/api/user/v1/signup"
         ]:
             response = await call_next(request)
             return response

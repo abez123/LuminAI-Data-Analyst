@@ -10,7 +10,7 @@ class UserCreate(BaseModel):
 
     class Config:
         # Use schema_extra for additional metadata in your API docs
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "name": "user name",
                 "email": "user@example.com",

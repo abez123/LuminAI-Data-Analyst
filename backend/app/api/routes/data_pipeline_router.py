@@ -7,22 +7,27 @@ from app.api.controllers.data_pipeline_controller import (
 from app.dependencies.database import get_db
 from app.config.db_config import DB
 
-# Create an instance of APIRouter
+# instance of APIRouter
 data_pipeline_router = APIRouter()
 
 
 @data_pipeline_router.post("/upload-spreadsheet")
 async def upload_sheet(request: Request, file: UploadFile, db: DB = Depends(get_db)):
     user_id = request.state.user_id
-    # Call the controller function  nn
     return await upload_spreadsheet(user_id, file, db)
 
 
 @data_pipeline_router.post("/upload-document")
-async def upload_doc():
-    return upload_document()   # Call the controller function
+async def upload_doc(request: Request, file: UploadFile, db: DB = Depends(get_db)):
+    user_id = request.state.user_id
+    return await upload_document(user_id, file, db)
 
 
-@data_pipeline_router.post("/add-data-source")
-async def upload_doc():
-    return connect_datasource()   # Call the controller function
+@data_pipeline_router.post("/get-data-source")
+async def get_sources():
+    return connect_datasource()
+
+
+@data_pipeline_router.post("/get-source-tables")
+async def get_source_tables():
+    return connect_datasource()

@@ -8,7 +8,7 @@ class AskQuestion(BaseModel):
 
     class Config:
         # Use schema_extra for additional metadata in your API docs
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "question": "write your question",
             }

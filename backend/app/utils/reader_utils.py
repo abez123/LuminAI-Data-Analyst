@@ -1,7 +1,9 @@
 from pypdf import PdfReader
 from langchain_text_splitters import CharacterTextSplitter
-from langchain_community.document_loaders import TextLoader
 from langchain.schema import Document
+from io import BytesIO
+from typing import List
+
 
 text_splitter = CharacterTextSplitter(
     separator="\n",
@@ -11,25 +13,19 @@ text_splitter = CharacterTextSplitter(
 )
 
 
-def pdf_to_document(filepath):
-    pdf_reader = PdfReader(filepath)
-    raw_text = ""
-    for i, page in enumerate(pdf_reader.pages):
-        content = page.extract_text()
-        if content:
-            raw_text += content
+def pdf_to_document(buffer: BytesIO, file_name: str) -> List[Document]:
+    pdf_reader = PdfReader(buffer)
+    raw_text = "".join(page.extract_text() or "" for page in pdf_reader.pages)
     texts = text_splitter.split_text(raw_text)
-    documents = []
-    for text in texts:
-        documents.append(Document(
-            page_content=text,
-            metadata={"source": filepath},
-        ))
-    return documents
+    return [Document(page_content=text, metadata={"source": file_name}) for text in texts]
 
 
-def text_to_document(filepath):
-    loader = TextLoader(filepath)
-    text_document = loader.load()
-    documents = text_splitter.split_documents(text_document)
-    return documents
+def text_to_document(buffer: BytesIO, file_name: str) -> List[Document]:
+    # Read the content of the BytesIO object
+    text_content = buffer.getvalue().decode('utf-8')
+
+    # Split the text into chunks
+    texts = text_splitter.split_text(text_content)
+
+    # Create Document objects
+    return [Document(page_content=text, metadata={"source": file_name}) for text in texts]

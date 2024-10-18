@@ -33,3 +33,11 @@ def ask_question(question: str):
             "message": "Something went wrong",
             "error": str(e)
         })
+
+
+def get_convesactions():
+    pass
+
+
+def get_conversaction_history():
+    pass

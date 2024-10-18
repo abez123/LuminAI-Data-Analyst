@@ -10,18 +10,18 @@ api_router = APIRouter()
 # Include the hello router in the main API router
 api_router.include_router(
     auth_router,
-    prefix="/api/v1/user",
+    prefix="/api/user/v1",
     tags=["user"],
 )
 
 api_router.include_router(
     data_pipeline_router,
-    prefix="/api/v1/data",
+    prefix="/api/data/v1",
     tags=["data"],
 )
 
 api_router.include_router(
     chat_router,
-    prefix="/api/v1/chat",
+    prefix="/api/chat/v1",
     tags=["chat"],
 )
