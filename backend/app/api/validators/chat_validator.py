@@ -1,5 +1,3 @@
-# app/api/validators/user.py
-
 from pydantic import BaseModel
 
 

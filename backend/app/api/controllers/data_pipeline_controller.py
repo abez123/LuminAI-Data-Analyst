@@ -1,6 +1,7 @@
 from fastapi import UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import select, func
 from io import BytesIO
 import pandas as pd
 from app.config.logging_config import get_logger
@@ -9,13 +10,15 @@ from app.api.db.data_sources import DataSources
 from app.utils.reader_utils import (pdf_to_document, text_to_document)
 from app.config.db_config import VectorDB
 import uuid
+from app.api.validators.data_source_validator import (
+    GetSourceTable, AddDataSource)
 
 # Set up logging
 logger = get_logger(__name__)
 vector_db = VectorDB()
 
 
-async def upload_spreadsheet(id: int, file: UploadFile, db: DB):
+async def upload_spreadsheet(id: int, file: UploadFile, db: DB) -> JSONResponse:
     buffer = None
     try:
         logger.info(f"Processing file: {file.filename}")
@@ -64,26 +67,34 @@ async def upload_spreadsheet(id: int, file: UploadFile, db: DB):
         })
 
     except HTTPException as he:
-        raise he
+        return JSONResponse(status_code=500, content={
+            "message": "Something went wrong",
+            "error": str(he)
+        })
     except SQLAlchemyError as e:
         logger.error(f"Database error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Database error occurred")
+        return JSONResponse(status_code=500, content={
+            "message": "Database error occurred",
+            "error": str(e)
+        })
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail="An unexpected error occurred")
+        return JSONResponse(status_code=500, content={
+            "message": "An unexpected error occurred",
+            "error": str(e)
+        })
     finally:
         if buffer:
             buffer.close()
         logger.info("Upload process completed")
 
 
-async def upload_document(id: int, file: UploadFile, db: DB):
+async def upload_document(id: int, file: UploadFile, db: DB) -> JSONResponse:
     buffer = None
     try:
         logger.info(f"Processing file: {file.filename}")
         session = db.create_session()
-        vector_db.initialize_embedding()
+        vector_db.initialize_embedding(model_name="text-embedding-3-large")
         # Validate file extension
         if not file.filename.lower().endswith(('.pdf', '.doc', '.txt')):
             raise HTTPException(
@@ -103,8 +114,7 @@ async def upload_document(id: int, file: UploadFile, db: DB):
             documents = text_to_document(buffer, table_name)
 
         print(documents)
-        vector_db.insert_data(documents, table_name)
-
+        await vector_db.insert_data(documents, table_name)
         # Create DataSources entry
         new_data_source = DataSources(
             name=file.filename,
@@ -123,19 +133,135 @@ async def upload_document(id: int, file: UploadFile, db: DB):
         })
 
     except HTTPException as he:
-        raise he
+        return JSONResponse(status_code=500, content={
+            "message": "Something went wrong",
+            "error": str(he)
+        })
     except SQLAlchemyError as e:
         logger.error(f"Database error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Database error occurred")
+        return JSONResponse(status_code=500, content={
+            "message": "Database error occurred",
+            "error": str(e)
+        })
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail="An unexpected error occurred")
+        return JSONResponse(status_code=500, content={
+            "message": "An unexpected error occurred",
+            "error": str(e)
+        })
     finally:
         if buffer:
             buffer.close()
         logger.info("Upload process completed")
 
 
-def connect_datasource():
-    pass
+async def add_datasource(data: AddDataSource, id: int, db: DB) -> JSONResponse:
+    try:
+        session = db.create_session()
+        # Create DataSources entry
+        new_data_source = DataSources(
+            name=data.table_name,
+            type='url',
+            connection_url=data.source_name,
+            user_id=id
+        )
+
+        session.add(new_data_source)
+        session.commit()
+        session.refresh(new_data_source)
+
+        return JSONResponse(status_code=201, content={
+            "message": "Data uploaded successfully",
+            "table_name": data.table_name,
+            "connection_url": data.source_name,
+            "id": new_data_source.id
+        })
+
+    except HTTPException as he:
+        return JSONResponse(status_code=500, content={
+            "message": "Something went wrong",
+            "error": str(he)
+        })
+    except SQLAlchemyError as e:
+        logger.error(f"Database error: {str(e)}")
+        return JSONResponse(status_code=500, content={
+            "message": "Database error occurred",
+            "error": str(e)
+        })
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        return JSONResponse(status_code=500, content={
+            "message": "An unexpected error occurred",
+            "error": str(e)
+        })
+
+
+async def get_data_source_list(id: int, db: DB) -> JSONResponse:
+    try:
+        with db.session() as session:
+            query = select(
+                DataSources.id,
+                DataSources.name,
+                DataSources.type,
+                DataSources.connection_url,
+                DataSources.table_name,
+                func.to_char(DataSources.created_at,
+                             'YYYY-MM-DD').label('created_at')
+            ).where(DataSources.user_id == id)
+
+            result = session.execute(query)
+            data_sources = result.mappings().all()
+
+        # Convert to list of dicts and return
+        sources = [dict(row) for row in data_sources]
+
+        return JSONResponse(status_code=200, content={
+            "data": sources
+        })
+
+    except HTTPException as he:
+        return JSONResponse(status_code=500, content={
+            "message": "Something went wrong",
+            "error": str(he)
+        })
+    except SQLAlchemyError as e:
+        logger.error(f"Database error: {str(e)}")
+        return JSONResponse(status_code=500, content={
+            "message": "Database error occurred",
+            "error": str(e)
+        })
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        return JSONResponse(status_code=500, content={
+            "message": "An unexpected error occurred",
+            "error": str(e)
+        })
+
+
+async def get_source_tables(source: GetSourceTable) -> JSONResponse:
+    try:
+        db = DB(source.db_url)
+        tables = db.inspector.get_table_names()
+        return JSONResponse(status_code=200, content={
+            "data": tables
+        })
+    except HTTPException as he:
+        return JSONResponse(status_code=500, content={
+            "message": "Something went wrong",
+            "error": str(he)
+        })
+    except SQLAlchemyError as e:
+        logger.error(f"Database error: {str(e)}")
+        return JSONResponse(status_code=500, content={
+            "message": "Database error occurred",
+            "error": str(e)
+        })
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        return JSONResponse(status_code=500, content={
+            "message": "An unexpected error occurred",
+            "error": str(e)
+        })
+    finally:
+        if 'engine' in locals():
+            db.engine.dispose()

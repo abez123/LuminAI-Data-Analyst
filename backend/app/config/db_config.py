@@ -1,7 +1,8 @@
 from typing import List, Dict, Any
-from sqlalchemy import create_engine, inspect, text
+from sqlalchemy import create_engine, inspect, text, inspect
 from sqlalchemy.orm import sessionmaker, Session
 from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from app.config.logging_config import get_logger
 from langchain_community.vectorstores import PGVector
 from fastapi import HTTPException
@@ -24,6 +25,7 @@ class DB:
         self.engine = create_engine(db_url)
         self.session = sessionmaker(
             autocommit=False, autoflush=False, bind=self.engine)
+        self.inspector = inspect(self.engine)
 
     def execute_query(self, query: str) -> list:
         print("======== execute_query ========")
@@ -99,14 +101,14 @@ class VectorDB:
     def __init__(self):
         """Initialize VectorDB with connection string"""
         self.connection_string = DATABASE_URL
-        self._embedding: Optional[HuggingFaceEmbeddings] = None
+        self._embedding: Optional[OpenAIEmbeddings] = None
 
-    def initialize_embedding(self, model_name: str = "sentence-transformers/all-mpnet-base-v2"):
+    def initialize_embedding(self, model_name: str = "text-embedding-3-large"):
         """
         Initialize the embedding model.
         """
         if self._embedding is None:
-            self._embedding = HuggingFaceEmbeddings(model_name=model_name)
+            self._embedding = OpenAIEmbeddings(model=model_name)
             return "Embedding model initialized successfully."
         return "Embedding model already initialized."
 
@@ -117,7 +119,7 @@ class VectorDB:
                 "Embedding model not initialized. Call initialize_embedding() first.")
         return self._embedding
 
-    def insert_data(self, documents: List[Document], collection_name: str) -> PGVector:
+    async def insert_data(self, documents: List[Document], collection_name: str) -> PGVector:
         """Insert documents into vector store"""
         try:
             return PGVector.from_documents(
