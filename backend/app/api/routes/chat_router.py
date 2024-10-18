@@ -1,17 +1,17 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from app.api.controllers import chat_controller
 from app.api.validators.chat_validator import AskQuestion
+from app.dependencies.database import get_db
+from app.config.db_config import DB
 
 # Instance of APIRouter
 chat_router = APIRouter()
 
 
 @chat_router.post("/ask-question")
-async def ask_question(body: AskQuestion):
-    # if document
-    # return
-    # else
-    return chat_controller.ask_question(body.question)
+async def ask_question(request: Request, body: AskQuestion, db: DB = Depends(get_db)):
+    user_id = request.state.user_id
+    return await chat_controller.ask_question(user_id, body, db)
 
 
 @chat_router.post("/get-conversactions")

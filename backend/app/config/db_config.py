@@ -4,7 +4,9 @@ from sqlalchemy.orm import sessionmaker, Session
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import OpenAIEmbeddings
 from app.config.logging_config import get_logger
-from langchain_community.vectorstores import PGVector
+# from langchain_community.vectorstores import PGVector
+from langchain_postgres import PGVector
+from langchain_postgres.vectorstores import PGVector
 from fastapi import HTTPException
 from langchain.schema import Document
 import pandas as pd
@@ -126,7 +128,7 @@ class VectorDB:
                 embedding=self.embedding,
                 documents=documents,
                 collection_name=collection_name,
-                connection_string=self.connection_string,
+                connection=self.connection_string,
             )
         except Exception as e:
             logger.error(f"Vector store insertion error: {str(e)}")
@@ -137,8 +139,8 @@ class VectorDB:
         """Get existing vector store"""
         try:
             return PGVector(
-                connection_string=self.connection_string,
-                embedding_function=self.embedding,
+                connection=self.connection_string,
+                embeddings=self.embedding,
                 collection_name=collection_name,
                 pre_delete_collection=False
             )

@@ -1,31 +1,19 @@
-from app.config.llm_config import LLM
-from app.config.db_config import DB
-from app.langgraph.workflows.sql_workflow import WorkflowManager
 from fastapi.responses import JSONResponse
-from fastapi.responses import StreamingResponse
+from app.utils.chat_utils import (execute_workflow, execute_document_chat)
+from app.api.validators.chat_validator import AskQuestion
+from app.config.db_config import DB
 
-llm_instance = LLM()
 
-
-def ask_question(question: str):
+async def ask_question(id: int, body: AskQuestion, db: DB):
     try:
-        db = DB(db_url="sqlite:///./lumin.db")
-        llm = llm_instance.groq("gemma2-9b-it")
-        schema = db.get_schemas(table_names=[
-                                'olist_products_dataset', "olist_orders_dataset", "olist_customers_dataset", "olist_order_items_dataset"])
 
-        workflow = WorkflowManager(llm, db)
-        app = workflow.create_workflow().compile()
-
-        # Define a generator to stream the data from LangGraph
-        def event_stream():
-            for event in app.stream({"question": question, "schema": schema}):
-                for value in event.values():
-                    # Yield the streamed data to the client
-                    yield f"data: {value}\n\n"
-
-        # Return the streaming response using event_stream generator
-        return StreamingResponse(event_stream(), media_type="text/event-stream")
+        if body.type == "url" or body.type == "spreadsheet":
+            print("execure_workflow")
+            # return execure_workflow()
+        else:
+            print("execure_document_chat")
+            return execute_document_chat(
+                body.question, "text-embedding-3-large", "speech_81a36223")
 
     except Exception as e:
         # Catch all other errors and raise HTTP exception
