@@ -4,7 +4,7 @@ from app.config.db_config import DB, VectorDB
 from fastapi.responses import StreamingResponse, JSONResponse
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
-from typing import List
+from typing import List, Optional
 from app.config.logging_config import get_logger
 
 
@@ -13,8 +13,11 @@ llm_instance = LLM()
 vectorDB_instance = VectorDB()
 
 
-def execute_workflow(question: str, db_url: str, table_list: List[str]):
-    db = DB(db_url)
+def execute_workflow(question: str, table_list: List[str], db: Optional[DB] = None, db_url: Optional[str] = None):
+
+    if not db:
+        db = DB(db_url)
+
     llm = llm_instance.groq("gemma2-9b-it")
     schema = db.get_schemas(table_names=table_list)
 

@@ -44,3 +44,4 @@ services:
 networks:
   default:
     name: lumin-network
+    driver: bridge

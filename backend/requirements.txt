@@ -1,6 +1,7 @@
 fastapi
 pandas
 sqlalchemy
+mysql-connector-python
 psycopg2-binary
 psycopg_binary
 pgvector

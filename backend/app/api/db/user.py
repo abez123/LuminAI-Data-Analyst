@@ -16,3 +16,4 @@ class User(Base):
 
     # Add this relationship
     data_source = relationship("DataSources", back_populates="user")
+    conversation = relationship("Conversations", back_populates="user")

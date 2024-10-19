@@ -7,6 +7,19 @@ from app.langgraph.agents.sql_agent import SQLAgent
 from app.config.db_config import DB
 
 
+def clean_sql_query(query):
+    # Remove backticks and newlines
+    cleaned = query.replace('`', '').replace('\n', ' ')
+
+    # Remove any extra spaces
+    cleaned = ' '.join(cleaned.split())
+
+    # Remove the trailing '```' if present
+    cleaned = cleaned.rstrip('`')
+
+    return cleaned
+
+
 class InputState(TypedDict):
     question: str
     schema: List[Dict]
@@ -50,9 +63,11 @@ class WorkflowManager:
         query = state['sql_query']
         if query == "NOT_RELEVANT":
             return {"query_result": []}
+        # Clean query
+        cleaned_query = clean_sql_query(query)
 
-        print("SQL QUERY :", query)
-        result = self.db.execute_query(query)
+        print("SQL QUERY :", cleaned_query)
+        result = self.db.execute_query(cleaned_query)
         # Convert RowProxy to dict
         return {"query_result": result}
 
