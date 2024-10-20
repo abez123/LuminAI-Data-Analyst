@@ -1,6 +1,6 @@
 import { useRoutes } from "react-router-dom";
 
-import Login from "./pages/login";
+import Auth from "./pages/auth";
 import Chat from "./pages/chat";
 import Layout from "./components/Layout";
 import ChatHistory from "./pages/chatHistory";
@@ -21,7 +21,7 @@ import Settings from "./pages/settings";
 // Define your routing logic
 const AppRoutes = () => {
   const routes = useRoutes([
-    { path: "/", element: <Login /> },
+    { path: "/", element: <Auth /> },
     { path: "/chat", element: <Layout><Chat /></Layout> },
     { path: "/chat-history", element: <Layout><ChatHistory /></Layout> },
     { path: "/data-sources", element: <Layout><DataSource /></Layout> },

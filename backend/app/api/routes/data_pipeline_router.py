@@ -27,7 +27,7 @@ async def add_datasource(request: Request, data: AddDataSource, db: DB = Depends
     return await data_pipeline_controller.add_datasource(data, user_id, db)
 
 
-@data_pipeline_router.get("/get-data-source")
+@data_pipeline_router.get("/get-data-sources")
 async def get_data_source_list(request: Request, db: DB = Depends(get_db)):
     user_id = request.state.user_id
     return await data_pipeline_controller.get_data_source_list(user_id, db)

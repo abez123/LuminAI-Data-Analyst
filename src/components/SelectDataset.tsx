@@ -1,8 +1,7 @@
 import {useState} from 'react'
-import { BiSitemap } from 'react-icons/bi';
 import { MdKeyboardArrowDown } from "react-icons/md";
 
-const SelectDataset = () => {
+const SelectDataset:React.FC = () => {
 
     const [selectedDataSource, setSelectedDataSource] = useState('');
 
@@ -25,20 +24,27 @@ const SelectDataset = () => {
           value={selectedDataSource}
           onChange={(e) => setSelectedDataSource(e.target.value)}
         >
-          <option value="">Select Data Source</option>
+          <option value="">Select Tables</option>
           {/* Add your data source options here */}
         </select>
         <div className={`mr-l pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700`}>
           <MdKeyboardArrowDown className="h-5 w-5" />
         </div>
       </div>
-      <span className={`mx-4 text-navy-600`}>OR</span>
-      <button
-          className={`flex bg-blue-gray-50 border-blue-gray-100 text-gray-700 border rounded-[12px] py-2 px-6 leading-tight `}
+      <span className={`mx-4 text-gray-400`}>|</span>
+      <div className="relative">
+        <select
+          className={`appearance-none bg-blue-gray-50 border-blue-gray-100 text-gray-700 border rounded-[12px] py-2 pr-8 pl-4 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+          value={selectedDataSource}
+          onChange={(e) => setSelectedDataSource(e.target.value)}
         >
-        <BiSitemap className="h-5 w-5 mr-2" />
-        <p>Add Data Source</p>
-      </button>
+          <option value="">Select LLM Model</option>
+          {/* Add your data source options here */}
+        </select>
+        <div className={`mr-l pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700`}>
+          <MdKeyboardArrowDown className="h-5 w-5" />
+        </div>
+      </div>
     </div>
   </div>
   )
