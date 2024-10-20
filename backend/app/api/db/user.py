@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum, JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .base_class import Base
@@ -15,5 +15,5 @@ class User(Base):
     created_at = Column("created_at", DateTime, default=datetime.utcnow)
 
     # Add this relationship
-    data_source = relationship("DataSources", back_populates="user")
-    conversation = relationship("Conversations", back_populates="user")
+    data_sources = relationship("DataSources", back_populates="user")
+    conversations = relationship("Conversations", back_populates="user")

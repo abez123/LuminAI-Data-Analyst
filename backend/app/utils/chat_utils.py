@@ -6,6 +6,11 @@ from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from typing import List, Optional
 from app.config.logging_config import get_logger
+from app.api.db.chat_history import Messages, Conversations
+from datetime import datetime
+from sqlalchemy import JSON
+from sqlalchemy.exc import SQLAlchemyError
+from fastapi import HTTPException
 
 
 logger = get_logger(__name__)
@@ -13,10 +18,11 @@ llm_instance = LLM()
 vectorDB_instance = VectorDB()
 
 
-def execute_workflow(question: str, table_list: List[str], db: Optional[DB] = None, db_url: Optional[str] = None):
+def execute_workflow(question: str, conversation_id: int, table_list: List[str], system_db: Optional[DB] = None, db_url: Optional[str] = None):
 
-    if not db:
-        db = DB(db_url)
+    db: DB = DB(db_url)
+    if not db_url:
+        db: DB = system_db
 
     llm = llm_instance.groq("gemma2-9b-it")
     schema = db.get_schemas(table_names=table_list)
@@ -26,11 +32,36 @@ def execute_workflow(question: str, table_list: List[str], db: Optional[DB] = No
 
     # Define a generator to stream the data from LangGraph
     def event_stream():
-        for event in app.stream({"question": question, "schema": schema}):
-            for value in event.values():
-                # Yield the streamed data to the client
-                yield f"data: {value}\n\n"
+        ai_responses = []
+        try:
+            for event in app.stream({"question": question, "schema": schema}):
+                for value in event.values():
+                    ai_responses.append(value)
+                    # Yield the streamed data to the client
+                    yield f"data: {value}\n\n"
 
+            # After streaming is complete, save all responses as one message
+            full_response = "".join(str(response) for response in ai_responses)
+            logger.info(f"Full_AI_Response: {full_response}")
+
+            try:
+                save_message(
+                    conversation_id=conversation_id,
+                    role="assistant",
+                    content={"answer": full_response},
+                    db=system_db
+                )
+            except SQLAlchemyError as e:
+                logger.error(
+                    f"Database error occurred while saving message: {str(e)}")
+                yield f"error: {str(e)}\n\n"
+            except Exception as e:
+                logger.error(f"Error occurred while saving message: {str(e)}")
+                yield f"error: {str(e)}\n\n"
+
+        except Exception as e:
+            logger.error(f"Error occurred during streaming: {str(e)}")
+            yield f"error: {str(e)}\n\n"
     # Return the streaming response using event_stream generator
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
@@ -99,3 +130,37 @@ def execute_document_chat(question: str, embedding_model: str, table_name: str):
     except Exception as e:
         print(f"Error in simple_document_chat: {str(e)}")
         raise ValueError(f"Failed to execute document chat: {str(e)}")
+
+
+def save_message(conversation_id: int, role: str, content: JSON, db: DB):
+    try:
+        with db.session() as session:
+            # Create DataSources entry
+            new_data_source = Messages(
+                conversation_id=conversation_id,
+                role=role,
+                content=content,
+            )
+
+            session.add(new_data_source)
+            session.commit()
+            session.refresh(new_data_source)
+
+        return {
+            "id": new_data_source.id,
+            "role": new_data_source.role
+        }
+
+    except SQLAlchemyError as e:
+        logger.error(f"Database error: {str(e)}")
+        raise HTTPException(status_code=500, detail={
+            "message": "Database error occurred",
+            "error": str(e)
+        })
+    except Exception as e:
+        # Catch all other errors and raise HTTP exception
+        logger.error(f"Something went wrong: {str(e)}")
+        raise HTTPException(status_code=500, detail={
+            "message": "Database error occurred",
+            "error": str(e)
+        })

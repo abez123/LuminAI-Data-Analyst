@@ -2,11 +2,14 @@ from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import select
-from app.utils.chat_utils import (execute_workflow, execute_document_chat)
+from app.utils.chat_utils import (
+    execute_workflow, execute_document_chat, save_message)
 from app.api.validators.chat_validator import AskQuestion, InitiateCinversaction
 from app.config.db_config import DB
 from app.config.logging_config import get_logger
 from app.api.db.data_sources import DataSources
+from app.api.db.chat_history import Conversations
+from datetime import datetime
 
 # Set up logging
 logger = get_logger(__name__)
@@ -18,17 +21,27 @@ async def ask_question(id: int, body: AskQuestion, db: DB):
             data_source = session.execute(select(DataSources).where(
                 DataSources.id == id)).scalar_one_or_none()
 
+        save_message(
+            conversation_id=body.conversaction_id,
+            role="user",
+            content={"question": body.question},
+            db=db
+        )
+
         if body.type == "url":
             return execute_workflow(
                 question=body.question,
+                conversation_id=body.conversaction_id,
                 db_url=data_source.connection_url,
-                table_list=body.selected_tables
+                table_list=body.selected_tables,
+                system_db=db
             )
         elif body.type == "spreadsheet":
             return execute_workflow(
                 question=body.question,
-                db=db,
-                table_list=[data_source.table_name]
+                conversation_id=body.conversaction_id,
+                table_list=[data_source.table_name],
+                system_db=db
             )
         else:
             print("execure_document_chat")
@@ -56,7 +69,54 @@ async def ask_question(id: int, body: AskQuestion, db: DB):
 
 
 def initiate_convesactions(user_id: int, body: InitiateCinversaction, db: DB):
-    pass
+    try:
+        with db.session() as session:
+            data_source = session.execute(select(DataSources).where(
+                DataSources.id == body.data_source_id)).scalar_one_or_none()
+
+            # Generate name
+            current_time = datetime.now()
+            formatted_date = current_time.strftime("%Y %b %d %H:%M").lower()
+            combined_name = f"{data_source.name} {formatted_date}"
+
+            # Create DataSources entry
+            new_data_source = Conversations(
+                user_id=user_id,
+                data_source_id=data_source.id,
+                title=combined_name,
+            )
+
+            session.add(new_data_source)
+            session.commit()
+            session.refresh(new_data_source)
+
+        return JSONResponse(status_code=200, content={
+            "message": "Conversaction initiated",
+            "data": {
+                "conversaction_id": new_data_source.id,
+                "conversaction_title": new_data_source.title,
+                "data_source_id": new_data_source.data_source_id,
+            }
+        })
+
+    except HTTPException as he:
+        return JSONResponse(status_code=500, content={
+            "message": "Something went wrong",
+            "error": str(he)
+        })
+    except SQLAlchemyError as e:
+        logger.error(f"Database error: {str(e)}")
+        return JSONResponse(status_code=500, content={
+            "message": "Database error occurred",
+            "error": str(e)
+        })
+    except Exception as e:
+        # Catch all other errors and raise HTTP exception
+        logger.error(f"Something went wrong: {str(e)}")
+        return JSONResponse(status_code=500, content={
+            "message": "Something went wrong",
+            "error": str(e)
+        })
 
 
 def get_convesactions():

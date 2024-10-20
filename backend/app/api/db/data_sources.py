@@ -17,5 +17,5 @@ class DataSources(Base):
     created_at = Column("created_at", DateTime, default=datetime.utcnow)
 
     # Add this relationship
-    user = relationship("User", back_populates="data_source")
-    conversation = relationship("Conversations", back_populates="data_source")
+    user = relationship("User", back_populates="data_sources")
+    conversations = relationship("Conversations", back_populates="data_source")

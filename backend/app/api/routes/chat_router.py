@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends
 from app.api.controllers import chat_controller
-from app.api.validators.chat_validator import AskQuestion
+from app.api.validators.chat_validator import AskQuestion, InitiateCinversaction
 from app.dependencies.database import get_db
 from app.config.db_config import DB
 
@@ -15,7 +15,7 @@ async def ask_question(request: Request, body: AskQuestion, db: DB = Depends(get
 
 
 @chat_router.post("/initiate-convesactions")
-async def initiate_convesactions(request: Request, body: AskQuestion, db: DB = Depends(get_db)):
+async def initiate_convesactions(request: Request, body: InitiateCinversaction, db: DB = Depends(get_db)):
     user_id = request.state.user_id
     return chat_controller.initiate_convesactions(user_id, body, db)
 

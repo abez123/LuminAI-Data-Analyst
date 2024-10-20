@@ -2,9 +2,9 @@
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Enum, DateTime, ForeignKey, JSON, text
 from app.config.env import DATABASE_URL
 import logging
+from .chat_history import Conversations, Messages
 from .user import User
 from .data_sources import DataSources
-from .chat_history import Conversations, Messages
 
 logger = logging.getLogger(__name__)
 
