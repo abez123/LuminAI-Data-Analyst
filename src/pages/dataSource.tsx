@@ -1,29 +1,34 @@
-import React from 'react';
+import React,{useEffect} from 'react';
 import { BiFile } from 'react-icons/bi';
-
-interface FileInfo {
-  name: string;
-  description: string;
-  size: string;
-  dateUploaded: string;
-  lastUpdated: string;
-  uploadedBy: string;
-}
+import { useGetDataSourcesMutation } from '../hooks/useDataSet';
+import dataSetStore from '../zustand/stores/dataSetStore';
+import {DataSourceTableLoader} from '../components/loaders/DataSourceTableLoader';
 
 const DataSource: React.FC = () => {
-  // Mock data - replace with your actual data source
-  const files: FileInfo[] = Array(5).fill({
-    name: 'Filename',
-    description: 'Description',
-    dateUploaded: '10.02.2022 18:38',
-    lastUpdated: '10.02.2022 18:38',
-  });
+
+  const dataSets = dataSetStore((state) => state.dataSets);
+  const { mutate: getDataSource,status, isError, error,data } = useGetDataSourcesMutation();
+
+  useEffect(() => {
+    if(!dataSets){
+      getDataSource()
+    }
+  }, [])
+
+  console.log({
+    status, isError, error,data
+  })
+
 
   return (
     <div className="flex flex-col py-8 pr-8 h-screen">
       <div className="h-full rounded-[20px] bg-white border border-blue-gray-100 dark:bg-maroon-400 dark:border-maroon-600 w-full">
         <div className="bg-white rounded-[20px] shadow-sm overflow-hidden">
-          <table className="w-full">
+          {
+            status === 'pending'? 
+            <DataSourceTableLoader rows={3} />
+            :
+            <table className="w-full">
             <thead>
               <tr className="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 <th className="px-6 py-3">Type</th>
@@ -32,7 +37,7 @@ const DataSource: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {files.map((file, index) => (
+              {dataSets?.map((file, index) => (
                 <tr key={index} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -43,20 +48,22 @@ const DataSource: React.FC = () => {
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">{file.name}</div>
-                        <div className="text-sm text-gray-500">{file.description}</div>
+                        <div className="text-sm text-gray-500">{file.type}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {file.dateUploaded}
+                    {file?.table_name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {file.lastUpdated}
+                    {file?.created_at}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          }
+
         </div>
       </div>
     </div>

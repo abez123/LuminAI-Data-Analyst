@@ -11,7 +11,7 @@ export interface UserStore {
   setLoader: (loader: Partial<UserStore['loader']>) => void;
 }
 
-const useStore = create<UserStore>((set) => ({
+const userStore = create<UserStore>((set) => ({
   user: null,
   loader: {
     userLoaded: false,
@@ -21,4 +21,4 @@ const useStore = create<UserStore>((set) => ({
   setLoader: (loader) => set((state) => ({ loader: { ...state.loader, ...loader } })),
 }));
 
-export default useStore;
+export default userStore;

@@ -1,42 +1,67 @@
-import React, { useState } from 'react';
-import { BiUpload, BiFile, BiX } from 'react-icons/bi';
-
-interface FileInfo {
-  name: string;
-  size: number;
-  progress: number;
-  status: 'uploading' | 'completed';
-}
+import React, { useEffect } from 'react';
+import { BiUpload, BiFile } from 'react-icons/bi';
+import { IoIosArrowForward } from 'react-icons/io';
+import { toast } from 'react-toastify';
+import { useGetDataSourcesMutation, useUploadSpreadsheet } from '../../hooks/useDataSet';
+import dataSetStore from '../../zustand/stores/dataSetStore';
+import { DataSourceTableLoader } from '../loaders/DataSourceTableLoader';
 
 type UploadFileProps = {
-    setComponent: React.Dispatch<React.SetStateAction<string>>
-  };
+  setComponent: React.Dispatch<React.SetStateAction<string>>;
+};
 
-const UploadFile: React.FC<UploadFileProps> = ({setComponent}) => {
-  const [files, setFiles] = useState<FileInfo[]>([
-    // { name: 'my-cv.pdf', size: 120 * 1024, progress: 50, status: 'uploading' },
-    // { name: 'Google-certificate.pdf', size: 94 * 1024, progress: 100, status: 'completed' },
-  ]);
+const UploadFile: React.FC<UploadFileProps> = ({ setComponent }) => {
+  const dataSets = dataSetStore((state) => state.dataSets);
+  const { mutate: uploadFile  } = useUploadSpreadsheet();
+  const { mutate: getDataSource, status:dataSourceStatus, isError, error,data } = useGetDataSourcesMutation();
+
+
+  console.log({
+    dataSourceStatus,
+    data,
+    error,
+    isError
+  });
+
+  useEffect(() => {
+    if (!dataSets) {
+      getDataSource();
+    }
+  }, []);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // Handle file selection logic here
-    // For demonstration, let's add a new file to the list
     const file = event.target.files?.[0];
-    if (file) {
-      setFiles([
-        ...files,
-        {
-          name: file.name,
-          size: file.size,
-          progress: 0,
-          status: 'uploading',
-        },
-      ]);
-    }
-  };
 
-  const removeFile = (index: number) => {
-    setFiles(files.filter((_, i) => i !== index));
+    if (file) {
+      const fileName = file.name;
+      const fileExtension = fileName.slice(((fileName.lastIndexOf('.') - 1) >>> 0) + 2);
+
+      // Define allowed file types
+      const allowedExtensions = ['csv', 'xlsx', 'xls', 'pdf', 'txt'];
+      const allowedMimeTypes = [
+        'text/csv',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
+        'application/vnd.ms-excel', // xls
+        'application/pdf',
+        'text/plain',
+      ];
+
+      // Check if the file type is allowed
+      if (allowedExtensions.includes(fileExtension) && allowedMimeTypes.includes(file.type)) {
+        // console.log('File name:', fileName);
+        // console.log('File extension:', fileExtension);
+        // console.log('File type:', file.type);
+
+        // File is valid, proceed with upload
+        if (['csv', 'xlsx', 'xls'].includes(fileExtension)) {
+          uploadFile(file);
+        } else {
+          console.log('Upload document');
+        }
+      } else {
+        toast.error('Invalid file type. Please upload Excel, CSV, PDF, or Text files only.');
+      }
+    }
   };
 
   return (
@@ -58,41 +83,43 @@ const UploadFile: React.FC<UploadFileProps> = ({setComponent}) => {
               Browse File
             </button>
             <p className="my-auto px-4">OR</p>
-            <button 
-            onClick={() => setComponent("ConnectDB")}
-            className="bg-white text-gray-700 border border-gray-300 rounded px-4 py-2 hover:bg-gray-50">
+            <button
+              onClick={() => setComponent('ConnectDB')}
+              className="bg-white text-gray-700 border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
+            >
               Connect Database
             </button>
           </div>
           <input id="fileInput" type="file" className="hidden" onChange={handleFileChange} />
         </div>
 
-        {files.map((file, index) => (
-          <div key={index} className="bg-gray-50 rounded-lg p-3 mb-2 flex items-center">
-            <BiFile className="w-8 h-8 text-red-500 mr-3" />
-            <div className="flex-grow">
-              <div className="flex justify-between items-center mb-1">
-                <span className="font-medium">{file.name}</span>
-                <button onClick={() => removeFile(index)}>
-                  <BiX className="w-4 h-4 text-gray-500" />
-                </button>
-              </div>
-              <div className="text-xs text-gray-500">
-                {file.progress === 100
-                  ? 'Completed'
-                  : `${Math.round(file.size / 1024)} KB of ${Math.round(file.size / 1024)} KB`}
-              </div>
-              {file.status === 'uploading' && (
-                <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                  <div
-                    className="bg-blue-600 h-1.5 rounded-full"
-                    style={{ width: `${file.progress}%` }}
-                  ></div>
+        {dataSourceStatus === 'pending' ? (
+          <DataSourceTableLoader rows={3} />
+        ) : (
+          <>
+            {dataSets?.map((file, index) => (
+              <div
+                key={index}
+                className="bg-gray-50 rounded-lg p-3 mb-2 flex items-center cursor-pointer"
+              >
+                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <BiFile className="h-6 w-6 text-blue-600" />
                 </div>
-              )}
-            </div>
-          </div>
-        ))}
+                <div className="flex-grow">
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-gray-900">{file.name}</div>
+                      <div className="text-sm text-gray-500">{file.type}</div>
+                    </div>
+                    <button>
+                      <IoIosArrowForward className="w-6 h-6 text-blue-600" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
       </div>
     </div>
   );

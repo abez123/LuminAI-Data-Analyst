@@ -7,25 +7,22 @@ from app.dependencies.database import get_db
 
 app = FastAPI()
 
+# Add auth middleware
+app.add_middleware(AuthMiddleware)
 # CORS setup 
-origins = ["http://localhost:3000"] 
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],  # Add your React app's URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 @app.on_event("startup")
 async def startup_event():
     init_db()
     db = next(get_db())
 
-# Add auth middleware
-app.add_middleware(AuthMiddleware)
 # Include API routes
 app.include_router(api_router)
 

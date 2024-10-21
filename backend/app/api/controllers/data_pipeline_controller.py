@@ -12,6 +12,7 @@ from app.config.db_config import VectorDB
 import uuid
 from app.api.validators.data_source_validator import (
     GetSourceTable, AddDataSource)
+from app.utils.response_utils import create_response
 
 # Set up logging
 logger = get_logger(__name__)
@@ -25,8 +26,11 @@ async def upload_spreadsheet(id: int, file: UploadFile, db: DB) -> JSONResponse:
         session = db.create_session()
         # Validate file extension
         if not file.filename.lower().endswith(('.csv', '.xlsx', '.xls')):
-            raise HTTPException(
-                status_code=400, detail="Only CSV and Excel files are allowed")
+            return JSONResponse(status_code=400, content=create_response(
+                status_code=400,
+                message="Only CSV and Excel files are allowed",
+                data={}
+            ))
 
         # Read file contents
         contents = await file.read()
@@ -58,31 +62,39 @@ async def upload_spreadsheet(id: int, file: UploadFile, db: DB) -> JSONResponse:
         session.refresh(new_data_source)
 
         logger.info(f"Successfully processed file. Rows: {rows_affected}")
-
-        return JSONResponse(status_code=201, content={
-            "message": "Data uploaded successfully",
-            "table_name": table_name,
-            "rows_processed": rows_affected,
-            "data_source_id": new_data_source.id
-        })
+        return JSONResponse(status_code=201, content=create_response(
+            status_code=201,
+            message="Data uploaded successfully",
+            data={
+                "table_name": table_name,
+                "rows_processed": rows_affected,
+                "data_source_id": new_data_source.id
+            }
+        ))
 
     except HTTPException as he:
-        return JSONResponse(status_code=500, content={
-            "message": "Something went wrong",
-            "error": str(he)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="Something went wrong",
+            data={"error": str(he)}
+        ))
+        
     except SQLAlchemyError as e:
         logger.error(f"Database error: {str(e)}")
-        return JSONResponse(status_code=500, content={
-            "message": "Database error occurred",
-            "error": str(e)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="Database error occurred",
+            data={"error": str(e)}
+        ))
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
-        return JSONResponse(status_code=500, content={
-            "message": "An unexpected error occurred",
-            "error": str(e)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="An unexpected error occurred",
+            data={"error": str(e)}
+        ))
+
+
     finally:
         if buffer:
             buffer.close()
@@ -97,9 +109,11 @@ async def upload_document(id: int, file: UploadFile, db: DB) -> JSONResponse:
         vector_db.initialize_embedding(model_name="text-embedding-3-large")
         # Validate file extension
         if not file.filename.lower().endswith(('.pdf', '.doc', '.txt')):
-            raise HTTPException(
-                status_code=400, detail="Only Pdf, Doc and text files are allowed")
-
+            return JSONResponse(status_code=400, content=create_response(
+                status_code=400,
+                message="Only Pdf, Doc and text files are allowed",
+                data={}
+            ))
         # Generate a unique table name
         base_name = file.filename.rsplit('.', 1)[0].lower()
         table_name = f"{base_name}_{uuid.uuid4().hex[:8]}"
@@ -127,28 +141,33 @@ async def upload_document(id: int, file: UploadFile, db: DB) -> JSONResponse:
         session.commit()
         session.refresh(new_data_source)
 
-        return JSONResponse(status_code=201, content={
-            "message": "Data uploaded successfully",
-            "table_name": table_name
-        })
+        return JSONResponse(status_code=201, content=create_response(
+            status_code=201,
+            message="Data uploaded successfully",
+            data={"table_name": table_name},
+        ))
 
     except HTTPException as he:
-        return JSONResponse(status_code=500, content={
-            "message": "Something went wrong",
-            "error": str(he)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="Something went wrong",
+            data={"error": str(he)}
+        ))
+        
     except SQLAlchemyError as e:
         logger.error(f"Database error: {str(e)}")
-        return JSONResponse(status_code=500, content={
-            "message": "Database error occurred",
-            "error": str(e)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="Database error occurred",
+            data={"error": str(e)}
+        ))
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
-        return JSONResponse(status_code=500, content={
-            "message": "An unexpected error occurred",
-            "error": str(e)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="An unexpected error occurred",
+            data={"error": str(e)}
+        ))
     finally:
         if buffer:
             buffer.close()
@@ -170,30 +189,38 @@ async def add_datasource(data: AddDataSource, id: int, db: DB) -> JSONResponse:
         session.commit()
         session.refresh(new_data_source)
 
-        return JSONResponse(status_code=201, content={
-            "message": "Data uploaded successfully",
-            "table_name": data.table_name,
-            "connection_url": data.source_name,
-            "id": new_data_source.id
-        })
+        return JSONResponse(status_code=201, content=create_response(
+            status_code=201,
+            message="Data uploaded successfully",
+            data={
+                "table_name": data.table_name,
+                "connection_url": data.source_name,
+                "id": new_data_source.id
+            }
+        ))
 
     except HTTPException as he:
-        return JSONResponse(status_code=500, content={
-            "message": "Something went wrong",
-            "error": str(he)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="Something went wrong",
+            data={"error": str(he)}
+        ))
+        
     except SQLAlchemyError as e:
         logger.error(f"Database error: {str(e)}")
-        return JSONResponse(status_code=500, content={
-            "message": "Database error occurred",
-            "error": str(e)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="Database error occurred",
+            data={"error": str(e)}
+        ))
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
-        return JSONResponse(status_code=500, content={
-            "message": "An unexpected error occurred",
-            "error": str(e)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="An unexpected error occurred",
+            data={"error": str(e)}
+        ))
+
 
 
 async def get_data_source_list(id: int, db: DB) -> JSONResponse:
@@ -215,53 +242,64 @@ async def get_data_source_list(id: int, db: DB) -> JSONResponse:
         # Convert to list of dicts and return
         sources = [dict(row) for row in data_sources]
 
-        return JSONResponse(status_code=200, content={
-            "data": sources
-        })
+        return JSONResponse(status_code=200, content=create_response(
+            status_code=200,
+            message="Data sources fetched successfully",
+            data={"data_sources":sources}
+        ))
 
     except HTTPException as he:
-        return JSONResponse(status_code=500, content={
-            "message": "Something went wrong",
-            "error": str(he)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="Something went wrong",
+            data={"error": str(he)}
+        ))
+        
     except SQLAlchemyError as e:
         logger.error(f"Database error: {str(e)}")
-        return JSONResponse(status_code=500, content={
-            "message": "Database error occurred",
-            "error": str(e)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="Database error occurred",
+            data={"error": str(e)}
+        ))
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
-        return JSONResponse(status_code=500, content={
-            "message": "An unexpected error occurred",
-            "error": str(e)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="An unexpected error occurred",
+            data={"error": str(e)}
+        ))
 
 
 async def get_source_tables(source: GetSourceTable) -> JSONResponse:
     try:
         db = DB(source.db_url)
         tables = db.inspector.get_table_names()
-        return JSONResponse(status_code=200, content={
-            "data": tables
-        })
+        return JSONResponse(status_code=200, content=create_response(
+            status_code=200,
+            message="Tables fetched successfully",
+            data={"tables":tables}
+        ))
     except HTTPException as he:
-        return JSONResponse(status_code=500, content={
-            "message": "Something went wrong",
-            "error": str(he)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="Something went wrong",
+            data={"error": str(he)}
+        ))
     except SQLAlchemyError as e:
         logger.error(f"Database error: {str(e)}")
-        return JSONResponse(status_code=500, content={
-            "message": "Database error occurred",
-            "error": str(e)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="Database error occurred",
+            data={"error": str(e)}
+        ))
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
-        return JSONResponse(status_code=500, content={
-            "message": "An unexpected error occurred",
-            "error": str(e)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="An unexpected error occurred",
+            data={"error": str(e)}
+        ))
     finally:
         if 'engine' in locals():
             db.engine.dispose()

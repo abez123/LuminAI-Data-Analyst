@@ -7,13 +7,26 @@ const apiClient = axios.create({
   baseURL: API_BASE_URL,
 });
 
-apiClient.interceptors.request.use((config) => {
+const getHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
   const user = getUser();
   if (user && user.access_token) {
-    config.headers.Authorization = `Bearer ${user.access_token}`;
+    headers['Authorization'] = `Bearer ${user.access_token}`;
   }
-  return config;
-});
+
+  return headers;
+};
+
+const createAxiosConfig = (additionalConfig: AxiosRequestConfig = {}): AxiosRequestConfig => {
+  return {
+    baseURL: API_BASE_URL,
+    headers: getHeaders(),
+    ...additionalConfig,
+  };
+};
 
 const getAuthHeader = (token?: string): AxiosRequestConfig => {
   if (token) {
@@ -26,14 +39,20 @@ const getAuthHeader = (token?: string): AxiosRequestConfig => {
   return {};
 };
 
-export const get = async <T>(url: string, token?: string): Promise<T> => {
-  const config = getAuthHeader(token);
-  const response = await apiClient.get<T>(url, config);
+export const get = async <T>(url: string, ): Promise<T> => {
+  const user = getUser();
+  const config = getAuthHeader(user?.access_token);
+  const response = await apiClient.get<T>(url,createAxiosConfig(config));
   return response.data;
 };
 
-export const post = async <T>(url: string, data: any, token?: string): Promise<T> => {
-  const config = getAuthHeader(token);
+export const post = async <T>(url: string, data: any, config?:any): Promise<T> => {
+  const user = getUser();
+  if(config){
+    config.headers["Authorization"] = user?.access_token;
+  }else{
+   config = getAuthHeader(user?.access_token);
+  }
   const response = await apiClient.post<T>(url, data, config);
   return response.data;
 };

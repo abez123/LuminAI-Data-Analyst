@@ -25,7 +25,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content={"message": "Authorization header missing or invalid"}
             )
-
+        
+        print("AUTH HEADER :",auth_header)
         token = auth_header.split(" ")[1]
 
         try:
