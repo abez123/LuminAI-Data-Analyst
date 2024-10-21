@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { BiPlus, BiBookContent, BiComment, BiSitemap, BiCog, BiMoon, BiSun } from 'react-icons/bi';
+import {useNavigate } from 'react-router-dom';
+import { BiPlus, BiBookContent, BiComment, BiSitemap, BiCog, BiMoon, BiSun, BiLogOut } from 'react-icons/bi';
 import { Link } from 'react-router-dom';
 import AddDataSourceModal from './dataSource/AddDataSourceModal';
+import { removeUser } from '../utils/localstorageUtils';
 
 const SideNav:React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
-
+  const navigate = useNavigate();
+  
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
@@ -47,6 +50,15 @@ const SideNav:React.FC = () => {
         <BiCog className="w-6 h-6" />
       </Link>
       <div className="flex-grow" />
+      <button
+        onClick={() => {
+          removeUser()
+          navigate("/")
+        }}
+        className="p-2 text-red-600 hover:bg-blue-gray-700/10 rounded-lg dark:text-red-300"
+      >
+        <BiLogOut className="w-6 h-6" />
+      </button>
       <button
         onClick={() => setIsDarkMode(!isDarkMode)}
         className="p-2 text-navy-600 hover:bg-blue-gray-700/10 rounded-lg dark:text-maroon-600"

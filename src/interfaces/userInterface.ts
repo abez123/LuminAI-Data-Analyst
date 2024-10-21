@@ -22,11 +22,3 @@ export interface User {
     password: string;
   }
   
-export interface UserStore {
-    user: User | null;
-    isLoading: boolean;
-    setUser: (payload: User) => void;
-    signupUser: (payload: SignupUser) => void;
-    // loginUser: (payload: LoginUser) => Promise<void>;
-    // fetchUser: (id: string) => Promise<void>;
-  }

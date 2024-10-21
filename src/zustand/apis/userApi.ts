@@ -1,29 +1,18 @@
-import {AUTH_ENDPOINTS} from './endPoints';
+import { AUTH_ENDPOINTS } from './endPoints';
 import { post, get } from './apiClient';
-import { SignupUser, LoginUser,User } from '../../interfaces/userInterface';
+import { SignupUser, LoginUser, LoginSignupResponse } from '../../interfaces/userInterface';
+import {ApiResponse} from "../../interfaces/globalInterfaces";
 
-export const signupUser = async (data: SignupUser) => {
-    try{
-        return await post<User>(AUTH_ENDPOINTS.SIGNUP, data);
-    }catch(err){
-        console.log(err);
-    }
+type ApiFunction<TInput, TOutput> = (data: TInput) => Promise<ApiResponse<TOutput>>;
+
+export const signupUser:ApiFunction<SignupUser, LoginSignupResponse> = async (data) => {
+  return await post(AUTH_ENDPOINTS.SIGNUP, data);
 };
 
-export const loginUser = async (data: LoginUser) => {
-    try{
-        return await post<unknown>(AUTH_ENDPOINTS.LOGIN, data);
-    }catch(err){
-        console.log(err);
-    }
+export const loginUser:ApiFunction<LoginUser, LoginSignupResponse> = async (data) => {
+  return await post(AUTH_ENDPOINTS.LOGIN, data);
 };
 
-export const fetchUser = async (token: string) => {
-    try{
-        return await get<unknown>(AUTH_ENDPOINTS.GET_USER, token);
-    }catch(err){
-        console.log(err);
-    }
+export const fetchUser = async (token: string):Promise<LoginSignupResponse> => {
+  return await get<LoginSignupResponse>(AUTH_ENDPOINTS.GET_USER, token);
 };
-
-  

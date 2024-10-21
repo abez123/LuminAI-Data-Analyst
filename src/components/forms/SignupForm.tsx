@@ -1,79 +1,91 @@
-import { useState } from 'react'
-import { FaEye,FaEyeSlash } from "react-icons/fa";
+import React from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { SignupUser } from '../../interfaces/userInterface';
 
 const SignUpForm: React.FC = () => {
-  const [showPassword, setShowPassword] = useState(false)
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const { register, handleSubmit, formState: { errors } } = useForm<SignupUser>();
+  const [showPassword, setShowPassword] = React.useState(false);
 
-  // const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-  //   console.log('Login attempt with:', { email, password });
-  // };
+  const onSubmit: SubmitHandler<SignupUser> = (data) => {
+    console.log('Form submitted with:', data);
+    // Here you would typically call your API to sign up the user
+  };
 
   return (
-    <form>
-    <div className="mb-6">
-      <label htmlFor="text" className="block text-sm font-medium text-gray-700 mb-2">
-        Name
-      </label>
-      <input
-        type="text"
-        id="name"
-        className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        placeholder="Enter name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-    </div>
-    <div className="mb-6">
-      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-        Email
-      </label>
-      <input
-        type="text"
-        id="email"
-        className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        placeholder="Enter email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-    </div>
-    <div className="mb-6">
-      <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-        Password
-      </label>
-      <div className="relative">
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div className="mb-6">
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+          Name
+        </label>
         <input
-          type={showPassword ? 'text' : 'password'}
-          id="password"
+          id="name"
+          {...register("name", { required: "Name is required" })}
           className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Enter password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Enter name"
         />
-        <button
-          type="button"
-          className="absolute inset-y-0 right-0 pr-3 flex items-center"
-          onClick={() => setShowPassword(!showPassword)}
-        >
-          {showPassword ? (
-            <FaEye className="h-5 w-5 text-gray-400"/>
-          ) : (
-            <FaEyeSlash className="h-5 w-5 text-gray-400" />
-          )}
-        </button>
+        {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
       </div>
-    </div>
 
-    <button
-      type="submit"
-      className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mb-6"
-    >
-      Sign up
-    </button>
-  </form>
+      <div className="mb-6">
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+          Email
+        </label>
+        <input
+          id="email"
+          {...register("email", { 
+            required: "Email is required",
+            pattern: {
+              value: /\S+@\S+\.\S+/,
+              message: "Entered value does not match email format"
+            }
+          })}
+          className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Enter email"
+        />
+        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
+      </div>
+
+      <div className="mb-6">
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+          Password
+        </label>
+        <div className="relative">
+          <input
+            id="password"
+            type={showPassword ? 'text' : 'password'}
+            {...register("password", { 
+              required: "Password is required",
+              minLength: {
+                value: 8,
+                message: "Password must have at least 8 characters"
+              }
+            })}
+            className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter password"
+          />
+          <button
+            type="button"
+            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? (
+              <FaEye className="h-5 w-5 text-gray-400"/>
+            ) : (
+              <FaEyeSlash className="h-5 w-5 text-gray-400" />
+            )}
+          </button>
+        </div>
+        {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
+      </div>
+
+      <button
+        type="submit"
+        className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mb-6"
+      >
+        Sign up
+      </button>
+    </form>
   );
 };
 

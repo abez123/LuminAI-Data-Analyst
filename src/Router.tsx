@@ -1,49 +1,41 @@
-import { useRoutes } from "react-router-dom";
-
+import { useRoutes, Navigate, Outlet } from "react-router-dom";
 import Auth from "./pages/auth";
 import Chat from "./pages/chat";
 import Layout from "./components/Layout";
 import ChatHistory from "./pages/chatHistory";
 import DataSource from "./pages/dataSource";
 import Settings from "./pages/settings";
+import { getUser } from "./utils/localstorageUtils";
 
-// A simplified PrivateRoute component to handle auth logic
-// const PrivateRoute = ({ element }) => {
-//   const isAuthenticated = localStorage.getItem("userToken");
+// AuthWrapper component to handle authentication logic
+const AuthWrapper = () => {
+  const isAuthenticated = getUser();
 
-//   return isAuthenticated ? (
-//     element
-//   ) : (
-//     <Navigate to="/" /> // Redirect to login page if not authenticated
-//   );
-// };
+  if (!isAuthenticated?.access_token) {
+    return <Navigate to="/" replace />;
+  }
+
+  return (
+    <Layout>
+      <Outlet />
+    </Layout>
+  );
+};
 
 // Define your routing logic
 const AppRoutes = () => {
   const routes = useRoutes([
     { path: "/", element: <Auth /> },
-    { path: "/chat", element: <Layout><Chat /></Layout> },
-    { path: "/chat-history", element: <Layout><ChatHistory /></Layout> },
-    { path: "/data-sources", element: <Layout><DataSource /></Layout> },
-    { path: "/settings", element: <Layout><Settings /></Layout> },
-    // { path: "/form", element: <Registration /> },
-    // { path: "/edit/:id", element: <EditUser /> },
-    // { path: "/thankyouPage", element: <ThankYouPage /> },
 
-    // Protected route for Dashboard
-    // {
-    //   path: "/dashboard",
-    //   element: (
-    //     <PrivateRoute
-    //       element={
-    //         <Layout>
-    //           <Dashboard />
-    //         </Layout>
-    //       }
-    //     />
-    //   ),
-    // },
-
+    {
+      element: <AuthWrapper />,
+      children: [
+        { path: "/chat", element: <Chat /> },
+        { path: "/chat-history", element: <ChatHistory /> },
+        { path: "/data-sources", element: <DataSource /> },
+        { path: "/settings", element: <Settings /> },
+      ]
+    },
   ]);
 
   return routes;

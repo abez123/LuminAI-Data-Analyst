@@ -1,10 +1,22 @@
+import {useEffect} from 'react'
+import {useNavigate } from 'react-router-dom';
 import ai_analyst_img from '../assets/ai_analyst_banner.jpeg';
 import { useState } from 'react'
 import LoginForm from '../components/forms/LoginForm';
 import SignUpForm from '../components/forms/SignupForm';
+import { getUser } from '../utils/localstorageUtils';
 
 export default function Auth() {
   const [component, setComponent] = useState("login")
+  const navigate = useNavigate();
+  const isAuthenticated = getUser();
+
+  useEffect(() => {
+     if(isAuthenticated?.access_token){
+      navigate('/data-sources')
+    }
+  }, [])
+  
   
   return (
     <div className="flex h-screen">

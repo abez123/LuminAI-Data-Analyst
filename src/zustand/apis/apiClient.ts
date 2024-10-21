@@ -1,9 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { AxiosRequestConfig } from 'axios';
 import { API_BASE_URL } from '../apis/endPoints';
+import { getUser } from '../../utils/localstorageUtils';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
+});
+
+apiClient.interceptors.request.use((config) => {
+  const user = getUser();
+  if (user && user.access_token) {
+    config.headers.Authorization = `Bearer ${user.access_token}`;
+  }
+  return config;
 });
 
 const getAuthHeader = (token?: string): AxiosRequestConfig => {

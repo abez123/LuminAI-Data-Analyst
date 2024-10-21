@@ -1,16 +1,24 @@
 import { create } from 'zustand'
-import {UserStore,User, SignupUser} from "../../interfaces/userInterface";
-import {signupUser} from "../../zustand/apis/userApi";
+import { User } from "../../interfaces/userInterface";
 
-const useStore = create<UserStore>()((set) => ({
+export interface UserStore {
+  user: User | null;
+  loader: {
+    userLoaded: boolean;
+    buttonLoader: boolean;
+  };
+  setUser: (user: User) => void;
+  setLoader: (loader: Partial<UserStore['loader']>) => void;
+}
+
+const useStore = create<UserStore>((set) => ({
   user: null,
-  isLoading: false,
-  signupUser: (payload: SignupUser) => {
-     signupUser(payload)
-    // set({ user })
+  loader: {
+    userLoaded: false,
+    buttonLoader: false
   },
-  // loginUser: (data: LoginUser) => loginUser(data)
-  setUser: (user:User) => set({ user })
-}))
+  setUser: (user: User) => set({ user }),
+  setLoader: (loader) => set((state) => ({ loader: { ...state.loader, ...loader } })),
+}));
 
-export default useStore
+export default useStore;
