@@ -7,7 +7,7 @@ import { AxiosError } from 'axios';
 import useStore from '../zustand/stores/useStore';
 import { saveUser } from '../utils/localstorageUtils';
 import { useNavigate } from 'react-router-dom';
-
+import { toast } from 'react-toastify';
 
 interface ErrorResponse {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15,13 +15,19 @@ interface ErrorResponse {
 }
 
 export const useSignupMutation = () => {
-//   const setUser = useStore((state) => state.setUser);
-  return useMutation<ApiResponse<LoginSignupResponse>, Error, SignupUser>({
+  const navigate = useNavigate();
+  const setUser = useStore((state) => state.setUser);
+  return useMutation<ApiResponse<LoginSignupResponse>, AxiosError<ErrorResponse>, SignupUser>({
     mutationFn: signupUser,
-    onSuccess: (data) => {
-      console.log(data);
-    //   setUser(data.user);
-      // Handle successful signup (e.g., store token, redirect)
+    onSuccess: (response) => {
+      const data: User = response.data;
+      setUser(data);
+      saveUser(data);
+      navigate('/data-sources');
+      toast.success(`Welcome to LUMIN ${data.name}`);
+    },
+    onError: (error) => {
+      console.log(error.response?.data);
     },
   });
 };
@@ -37,6 +43,7 @@ export const useLoginMutation = () => {
       setUser(data);
       saveUser(data);
       navigate('/data-sources');
+      toast.success(`Welcome back ${data.name}`);
     },
     onError: (error) => {
       console.log(error.response?.data);

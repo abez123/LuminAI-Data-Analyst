@@ -2,14 +2,15 @@ import React from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { SignupUser } from '../../interfaces/userInterface';
+import { useSignupMutation } from '../../hooks/useAuth';
 
 const SignUpForm: React.FC = () => {
+  const { mutate: signup, status, isError, error } = useSignupMutation();
   const { register, handleSubmit, formState: { errors } } = useForm<SignupUser>();
   const [showPassword, setShowPassword] = React.useState(false);
 
   const onSubmit: SubmitHandler<SignupUser> = (data) => {
-    console.log('Form submitted with:', data);
-    // Here you would typically call your API to sign up the user
+    signup(data);
   };
 
   return (
@@ -77,13 +78,17 @@ const SignUpForm: React.FC = () => {
           </button>
         </div>
         {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
+        {isError && <p className="mt-1 text-sm text-red-600">
+        {error.response?.data?.message || 'An unexpected error occurred'}
+        </p>}
       </div>
 
       <button
         type="submit"
+        disabled={status === "pending"}
         className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mb-6"
       >
-        Sign up
+        {status === "pending"? "Signing up..." : "Sign up"}
       </button>
     </form>
   );
