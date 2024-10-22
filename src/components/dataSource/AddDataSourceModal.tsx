@@ -1,26 +1,19 @@
-import React, { useState, Fragment,ReactNode } from 'react';
-import { Dialog, Transition,DialogPanel, TransitionChild } from '@headlessui/react';
+import React, { useState, Fragment, ReactNode } from 'react';
+import { Dialog, Transition, DialogPanel, TransitionChild } from '@headlessui/react';
 import UploadFile from './UploadFile';
 import AddDataSource from './AddDataSource';
 
-
 interface LayoutProps {
-    children: ReactNode;
-  }
+  children: ReactNode;
+}
 
-const AddDataSourceModal: React.FC<LayoutProps> = ({ children }) =>{
-
+const AddDataSourceModal: React.FC<LayoutProps> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [component, setComponent] = useState("uploadFile");
-
+  const [component, setComponent] = useState('uploadFile');
 
   return (
     <>
-      <div 
-        onClick={() => setIsOpen(true)}
-      >
-        {children}
-      </div>
+      <div onClick={() => setIsOpen(true)}>{children}</div>
       <Transition appear show={isOpen} as={Fragment}>
         <Dialog as="div" className="relative  z-10" onClose={() => setIsOpen(false)}>
           <TransitionChild
@@ -47,10 +40,11 @@ const AddDataSourceModal: React.FC<LayoutProps> = ({ children }) =>{
                 leaveTo="opacity-0 scale-95"
               >
                 <DialogPanel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                    {
-                        component == "uploadFile"?<UploadFile setComponent={setComponent}/>:<AddDataSource setComponent={setComponent}/>
-                    }
-                    
+                  {component == 'uploadFile' ? (
+                    <UploadFile setComponent={setComponent} setIsOpen={setIsOpen} />
+                  ) : (
+                    <AddDataSource setComponent={setComponent} />
+                  )}
                 </DialogPanel>
               </TransitionChild>
             </div>

@@ -4,7 +4,9 @@ import {
   GetDataSourcesResponse,
   UploadSpreadSheetResponse,
   AddDataSource,
-  AddDataSourceResponse
+  AddDataSourceResponse,
+  GetTablesList, 
+  GetTablesListResponse
 } from '../../interfaces/dataSourceInterface';
 import { ApiResponse } from '../../interfaces/globalInterfaces';
 
@@ -28,4 +30,6 @@ export const getDataSources: ApiFunction<void, GetDataSourcesResponse> = async (
   return await get(DATA_SOURCE_ENDPOINTS.GET_DATA_SOURCES);
 };
 
-export const getDataSourceTables = async () => {};
+export const getDataSourceTables: ApiFunction<GetTablesList, GetTablesListResponse> = async (data) => {
+  return await post(DATA_SOURCE_ENDPOINTS.GET_DATA_SOURCE_TABLES, data);
+};

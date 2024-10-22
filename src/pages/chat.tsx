@@ -5,8 +5,15 @@ import Steps from '../components/Steps';
 import SelectDataset from '../components/SelectDataset';
 import BarChart from '../components/graphs/BarChart';
 import Avatar from 'react-avatar';
+import { useParams } from 'react-router-dom';
 
 export default function Chat() {
+
+  // Get the data_source_id from URL parameters
+  const { data_source_id } = useParams();
+
+  console.log(data_source_id)
+
   const [question, setQuestion] = useState('');
   const [processing, setProcessing] = useState(false);
 
@@ -14,16 +21,15 @@ export default function Chat() {
     <div className="flex flex-col py-8 pr-8 h-screen">
       <div className="h-full rounded-[20px] bg-white border border-blue-gray-100 dark:bg-maroon-400 dark:border-maroon-600 flex justify-between w-full">
         <div className={`mt-auto flex flex-col p-8 ${processing ? 'w-1/2' : 'w-full'}`}>
-          {
-            processing &&             <div className="mb-6 flex">
-            {/* <span className="h-8 w-8 mr-2 rounded-md bg-slate-400"></span> */}
-            <Avatar name="Spandan Joshi" size="40" className="h-8 w-8 mr-2 rounded-md" />
-            <p className="my-auto text-md text-navy-600">
-              Which product categories generate the most revenue?
-            </p>
-          </div>
-          }
-
+          {processing && (
+            <div className="mb-6 flex">
+              {/* <span className="h-8 w-8 mr-2 rounded-md bg-slate-400"></span> */}
+              <Avatar name="Spandan Joshi" size="40" className="h-8 w-8 mr-2 rounded-md" />
+              <p className="my-auto text-md text-navy-600">
+                Which product categories generate the most revenue?
+              </p>
+            </div>
+          )}
 
           {processing ? (
             <div className="mb-6 bg-blue-gray-50 rounded-lg p-4">
@@ -46,7 +52,7 @@ export default function Chat() {
             <div className={`relative ${processing ? 'w-full' : 'w-3/5'}`}>
               {/* Adjust max-width as needed */}
               <textarea
-                className={`w-full ${processing ? "h-20":"h-40"} p-4 bg-blue-gray-50 border-blue-gray-100 text-navy-600 placeholder-gray-400 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                className={`w-full ${processing ? 'h-20' : 'h-40'} p-4 bg-blue-gray-50 border-blue-gray-100 text-navy-600 placeholder-gray-400 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                 placeholder="Type Your Question..."
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}

@@ -4,3 +4,8 @@ export interface ApiResponse<T> {
     message: string;
     data: T;
   }
+
+export interface ChatParams {
+    data_source_id: string;
+  }
+  

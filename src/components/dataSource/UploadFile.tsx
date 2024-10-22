@@ -3,17 +3,19 @@ import { BiUpload, BiFile, BiLink } from 'react-icons/bi';
 import { IoIosArrowForward } from 'react-icons/io';
 import { FiCommand } from 'react-icons/fi';
 import { toast } from 'react-toastify';
-import { useGetDataSourcesMutation, useUploadSpreadsheet } from '../../hooks/useDataSet';
+import { useGetDataSourcesMutation, useUploadSpreadsheetMutation } from '../../hooks/useDataSet';
 import dataSetStore from '../../zustand/stores/dataSetStore';
 import { DataSourceTableLoader } from '../loaders/DataSourceTableLoader';
+import { Link } from 'react-router-dom';
 
 type UploadFileProps = {
   setComponent: React.Dispatch<React.SetStateAction<string>>;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const UploadFile: React.FC<UploadFileProps> = ({ setComponent }) => {
+const UploadFile: React.FC<UploadFileProps> = ({ setComponent,setIsOpen }) => {
   const dataSets = dataSetStore((state) => state.dataSets);
-  const { mutate: uploadSpreadSheet, status: uploadSpreadSheetStatus } = useUploadSpreadsheet();
+  const { mutate: uploadSpreadSheet, status: uploadSpreadSheetStatus } = useUploadSpreadsheetMutation();
   const {
     mutate: getDataSource,
     status: dataSourceStatus,
@@ -119,7 +121,9 @@ const UploadFile: React.FC<UploadFileProps> = ({ setComponent }) => {
         ) : (
           <>
             {dataSets?.map((file, index) => (
-              <div
+              <Link
+                to={`/chat/${file.id}`}
+                onClick={() => setIsOpen(false)}
                 key={index}
                 className="bg-gray-50 rounded-lg p-3 mb-2 flex items-center cursor-pointer"
               >
@@ -141,7 +145,7 @@ const UploadFile: React.FC<UploadFileProps> = ({ setComponent }) => {
                     </button>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </>
         )}

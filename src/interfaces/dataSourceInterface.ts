@@ -35,3 +35,10 @@ export interface UploadSpreadSheetResponse {
   rows_processed: number,
   data_source_id: number
 }
+
+export interface GetTablesList {
+  db_url: string
+}
+export interface GetTablesListResponse {
+  tables: string[]
+}

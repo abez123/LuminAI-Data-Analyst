@@ -47,12 +47,14 @@ export const DataSourceTableLoader: React.FC<TableLoaderProps> = ({ rows = 5 }) 
   );
 };
 
-
 export const DataSourceCardLoader: React.FC<TableLoaderProps> = ({ rows = 5 }) => {
   return (
     <>
       {[...Array(rows)].map((_, index) => (
-        <div key={index} className="bg-gray-50 rounded-lg p-3 mb-2 flex items-center cursor-pointer animate-pulse">
+        <div
+          key={index}
+          className="bg-gray-50 rounded-lg p-3 mb-2 flex items-center cursor-pointer animate-pulse"
+        >
           <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
             <div className="h-6 w-6 bg-gray-300 rounded-full"></div>
           </div>
@@ -71,5 +73,27 @@ export const DataSourceCardLoader: React.FC<TableLoaderProps> = ({ rows = 5 }) =
   );
 };
 
+export const SelectModelSkeleton: React.FC = () => {
+  return (
+    <div className="flex justify-center items-center mt-4">
+      {/* First Select Skeleton */}
+      <div className="relative">
+        <div className="h-10 w-44 bg-gray-200 rounded-[12px] animate-pulse flex items-center">
+          <div className="h-4 w-24 bg-gray-300 rounded ml-4" />
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 bg-gray-300 rounded" />
+        </div>
+      </div>
 
+      {/* Divider */}
+      <div className="mx-4 h-6 w-px bg-gray-200" />
 
+      {/* Second Select Skeleton */}
+      <div className="relative">
+        <div className="h-10 w-44 bg-gray-200 rounded-[12px] animate-pulse flex items-center">
+          <div className="h-4 w-24 bg-gray-300 rounded ml-4" />
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 bg-gray-300 rounded" />
+        </div>
+      </div>
+    </div>
+  );
+};

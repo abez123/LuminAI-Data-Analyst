@@ -33,6 +33,6 @@ async def get_data_source_list(request: Request, db: DB = Depends(get_db)):
     return await data_pipeline_controller.get_data_source_list(user_id, db)
 
 
-@data_pipeline_router.get("/get-source-tables")
+@data_pipeline_router.post("/get-source-tables")
 async def get_source_tables(source: GetSourceTable):
     return await data_pipeline_controller.get_source_tables(source)

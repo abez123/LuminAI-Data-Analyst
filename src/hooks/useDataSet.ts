@@ -1,8 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
-import { AddDataSource, AddDataSourceResponse, DataSources, GetDataSourcesResponse, UploadSpreadSheetResponse } from "../interfaces/dataSourceInterface";
+import { AddDataSource, AddDataSourceResponse, DataSources, GetDataSourcesResponse, GetTablesList, GetTablesListResponse, UploadSpreadSheetResponse } from "../interfaces/dataSourceInterface";
 import { AxiosError } from 'axios';
 import {ApiResponse} from "../interfaces/globalInterfaces";
-import { addDataSource, getDataSources,uploadSpreadsheet } from "../zustand/apis/dataSourceApi";
+import { addDataSource, getDataSources,getDataSourceTables,uploadSpreadsheet } from "../zustand/apis/dataSourceApi";
 import dataSetStore from '../zustand/stores/dataSetStore';
 // import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -48,7 +48,7 @@ export const useGetDataSourcesMutation = () => {
     });
   };
 
-export const useUploadSpreadsheet= () => {
+export const useUploadSpreadsheetMutation = () => {
   const addDataSet = dataSetStore((state) => state.addDataSet);
   return useMutation<ApiResponse<UploadSpreadSheetResponse>, AxiosError<ErrorResponse>, File>({
     mutationFn: uploadSpreadsheet,
@@ -62,6 +62,21 @@ export const useUploadSpreadsheet= () => {
       }
       addDataSet(newSource)
       toast.success(response.message)
+    },
+    onError: (error) => {
+      console.log(error.response?.data.message);
+      toast.error(error.response?.data.message)
+    },
+  });
+}
+
+export const useGetTablesMutation = () => {
+  const setTables = dataSetStore((state) => state.setTables);
+  return useMutation<ApiResponse<GetTablesListResponse>, AxiosError<ErrorResponse>, GetTablesList>({
+    mutationFn: getDataSourceTables,
+    onSuccess: (response) => {
+      setTables(response.data.tables)
+      console.log(response.data.tables);
     },
     onError: (error) => {
       console.log(error.response?.data.message);
