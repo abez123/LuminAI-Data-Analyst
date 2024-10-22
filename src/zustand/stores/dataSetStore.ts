@@ -3,15 +3,34 @@ import { DataSources } from "../../interfaces/dataSourceInterface";
 
 export interface DataSetStore {
   dataSets: DataSources[] | null;
-  setDataSet: (user: DataSources[]) => void;
+  setDataSet: (dataSets: DataSources[]) => void;
+  addDataSet: (dataSet: DataSources) => void;
+  updateDataSet: (dataSet: DataSources) => void;
+  deleteDataSet: (id: number) => void;
 }
 
 const dataSetStore = create<DataSetStore>((set) => ({
   dataSets: null,
-  setDataSet: (dataSets: DataSources[]) => set({ dataSets }),
-//   addDataSet: (user: User) => set({ user }),
-//   updateDataSet: (user: User) => set({ user }),
-//   deleteDataSet: (user: User) => set({ user }),
+  
+  setDataSet: (dataSets: DataSources[]) => 
+    set({ dataSets }),
+  
+  addDataSet: (dataSet: DataSources) => 
+    set((state) => ({
+      dataSets: state.dataSets ? [...state.dataSets, dataSet] : [dataSet]
+    })),
+  
+  updateDataSet: (updatedDataSet: DataSources) =>
+    set((state) => ({
+      dataSets: state.dataSets?.map(dataSet => 
+        dataSet.id === updatedDataSet.id ? updatedDataSet : dataSet
+      ) || null
+    })),
+  
+  deleteDataSet: (id: number) =>
+    set((state) => ({
+      dataSets: state.dataSets?.filter(dataSet => dataSet.id !== id) || null
+    })),
 }));
 
 export default dataSetStore;

@@ -1,5 +1,5 @@
 import React,{useEffect} from 'react';
-import { BiFile } from 'react-icons/bi';
+import { BiFile, BiLink } from 'react-icons/bi';
 import { useGetDataSourcesMutation } from '../hooks/useDataSet';
 import dataSetStore from '../zustand/stores/dataSetStore';
 import {DataSourceTableLoader} from '../components/loaders/DataSourceTableLoader';
@@ -7,18 +7,13 @@ import {DataSourceTableLoader} from '../components/loaders/DataSourceTableLoader
 const DataSource: React.FC = () => {
 
   const dataSets = dataSetStore((state) => state.dataSets);
-  const { mutate: getDataSource,status, isError, error,data } = useGetDataSourcesMutation();
+  const { mutate: getDataSource,status } = useGetDataSourcesMutation();
 
   useEffect(() => {
     if(!dataSets){
       getDataSource()
     }
   }, [])
-
-  console.log({
-    status, isError, error,data
-  })
-
 
   return (
     <div className="flex flex-col py-8 pr-8 h-screen">
@@ -43,17 +38,23 @@ const DataSource: React.FC = () => {
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
                         <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                          <BiFile className="h-6 w-6 text-blue-600" />
+                          {
+                            file.type === "url"?
+                            <BiLink className="h-6 w-6 text-blue-600" />
+                            :
+                            <BiFile className="h-6 w-6 text-blue-600" />
+                          }
+                          
                         </div>
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">{file.name}</div>
-                        <div className="text-sm text-gray-500">{file.type}</div>
+                        <div className="text-xs text-gray-500 uppercase">{file.type}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {file?.table_name}
+                    {file.type === "url"?file.connection_url: file?.name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {file?.created_at}

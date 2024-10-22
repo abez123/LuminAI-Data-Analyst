@@ -1,11 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
-import { GetDataSourcesResponse, UploadSpreadSheetResponse } from "../interfaces/dataSourceInterface";
+import { AddDataSource, AddDataSourceResponse, DataSources, GetDataSourcesResponse, UploadSpreadSheetResponse } from "../interfaces/dataSourceInterface";
 import { AxiosError } from 'axios';
 import {ApiResponse} from "../interfaces/globalInterfaces";
-import { getDataSources,uploadSpreadsheet } from "../zustand/apis/dataSourceApi";
+import { addDataSource, getDataSources,uploadSpreadsheet } from "../zustand/apis/dataSourceApi";
 import dataSetStore from '../zustand/stores/dataSetStore';
 // import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { formatDate } from '../utils/dateTimeUtils';
 
 interface ErrorResponse {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,13 +26,42 @@ export const useGetDataSourcesMutation = () => {
     });
   };
 
+  export const useAddDataSourceMutation = (resetState:()=>void) => {
+    const addDataSet = dataSetStore((state) => state.addDataSet);
+    return useMutation<ApiResponse<AddDataSourceResponse>, AxiosError<ErrorResponse>, AddDataSource>({
+      mutationFn: addDataSource,
+      onSuccess: (response) => {
+        const newSource:DataSources = {
+          id: response.data.id,
+          name: response.data.table_name,
+          type: 'url',
+          connection_url: response.data.connection_url,
+          created_at: formatDate(new Date())
+        }
+        addDataSet(newSource)
+        resetState()
+        toast.success('Data source added successfully');
+      },
+      onError: (error) => {
+        console.log(error.response?.data);
+      },
+    });
+  };
+
 export const useUploadSpreadsheet= () => {
+  const addDataSet = dataSetStore((state) => state.addDataSet);
   return useMutation<ApiResponse<UploadSpreadSheetResponse>, AxiosError<ErrorResponse>, File>({
     mutationFn: uploadSpreadsheet,
-    onSuccess: (response) => {
-      console.log(response)
+    onSuccess: (response,file) => {
+      const newSource:DataSources = {
+        id: response.data.data_source_id,
+        name: file.name,
+        type: 'spreadsheet',
+        table_name: response.data.table_name,
+        created_at: formatDate(new Date())
+      }
+      addDataSet(newSource)
       toast.success(response.message)
-      // setDataSet(response.data.data_sources)
     },
     onError: (error) => {
       console.log(error.response?.data.message);

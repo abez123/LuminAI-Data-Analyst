@@ -15,6 +15,17 @@ export interface FileInfo {
 }
 
 
+export interface AddDataSource {
+  table_name: string;
+  source_name: string;
+}
+
+export interface AddDataSourceResponse {
+  table_name: string,
+  connection_url: string,
+  id: number
+}
+
 export interface GetDataSourcesResponse {
   data_sources: DataSources[];
 }
