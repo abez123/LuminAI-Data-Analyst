@@ -6,16 +6,39 @@ import SelectDataset from '../components/SelectDataset';
 import BarChart from '../components/graphs/BarChart';
 import Avatar from 'react-avatar';
 import { useParams } from 'react-router-dom';
+import { useStreamChat } from '../hooks/useChat';
+// import { toast } from 'react-toastify';
+import dataSetStore from '../zustand/stores/dataSetStore';
 
 export default function Chat() {
 
+  const tables = dataSetStore((state) => state.tables);
   // Get the data_source_id from URL parameters
-  const { data_source_id } = useParams();
+  const { data_source_id,conversation_id } = useParams();
+  const {
+    mutate: sendMessage,
+    // streamData,
+    status,
+    // error,
+  } = useStreamChat();
 
-  console.log(data_source_id)
+
+  // console.log({data_source_id,conversation_id})
+  console.log({status})
 
   const [question, setQuestion] = useState('');
   const [processing, setProcessing] = useState(false);
+
+  const askQuestion = () =>{
+
+    sendMessage({
+      question: question,
+      type: "url",
+      conversaction_id: Number(conversation_id),
+      dataset_id: Number(data_source_id),
+      selected_tables:tables
+    })
+  }
 
   return (
     <div className="flex flex-col py-8 pr-8 h-screen">
@@ -48,9 +71,7 @@ export default function Chat() {
           )}
 
           <div className="mt-auto flex justify-center items-center">
-            {/* Centering container */}
             <div className={`relative ${processing ? 'w-full' : 'w-3/5'}`}>
-              {/* Adjust max-width as needed */}
               <textarea
                 className={`w-full ${processing ? 'h-20' : 'h-40'} p-4 bg-blue-gray-50 border-blue-gray-100 text-navy-600 placeholder-gray-400 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                 placeholder="Type Your Question..."
@@ -58,9 +79,7 @@ export default function Chat() {
                 onChange={(e) => setQuestion(e.target.value)}
               />
               <button
-                onClick={() => {
-                  setProcessing(true);
-                }}
+                onClick={() => askQuestion()}
                 className={`absolute bottom-4 right-4 border border-blue-gray-100 bg-white text-navy-800 p-2 rounded-lg transition-colors`}
               >
                 <BiSend className="h-5 w-5" />

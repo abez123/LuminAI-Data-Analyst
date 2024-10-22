@@ -7,8 +7,8 @@ export const AUTH_ENDPOINTS = {
 };
 
 export const CHAT_ENDPOINTS = {
-  SIGNUP: `${API_BASE_URL}/chat/v1/ask-question`,
-  LOGIN: `${API_BASE_URL}/chat/v1/initiate-conversations`,
+  ASK_QUESTION: `${API_BASE_URL}/chat/v1/ask-question`,
+  INITIATE_CONVERSATION: `${API_BASE_URL}/chat/v1/initiate-conversations`,
   GET_CONVERSATIONS: `${API_BASE_URL}/chat/v1/get-conversations`,
   GET_CONVERSATION_HISTORY: `${API_BASE_URL}/chat/v1/get-conversations-history`,
 };

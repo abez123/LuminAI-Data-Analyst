@@ -10,6 +10,7 @@ from app.config.logging_config import get_logger
 from app.api.db.data_sources import DataSources
 from app.api.db.chat_history import Conversations
 from datetime import datetime
+from app.utils.response_utils import create_response
 
 # Set up logging
 logger = get_logger(__name__)
@@ -19,7 +20,14 @@ async def ask_question(id: int, body: AskQuestion, db: DB):
     try:
         with db.session() as session:
             data_source = session.execute(select(DataSources).where(
-                DataSources.id == id)).scalar_one_or_none()
+                DataSources.id == body.dataset_id)).scalar_one_or_none()
+            
+            if not data_source:
+                raise HTTPException(status_code=404, detail=create_response(
+                    status_code=404,
+                    message="Data source not found",
+                    data={}
+                ))
 
         save_message(
             conversation_id=body.conversaction_id,
@@ -49,23 +57,26 @@ async def ask_question(id: int, body: AskQuestion, db: DB):
                 body.question, "text-embedding-3-large", "speech_81a36223")
 
     except HTTPException as he:
-        return JSONResponse(status_code=500, content={
-            "message": "Something went wrong",
-            "error": str(he)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="Something went wrong",
+            data={"error": str(he)}
+        ))
+        
     except SQLAlchemyError as e:
         logger.error(f"Database error: {str(e)}")
-        return JSONResponse(status_code=500, content={
-            "message": "Database error occurred",
-            "error": str(e)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="Database error occurred",
+            data={"error": str(e)}
+        ))
     except Exception as e:
-        # Catch all other errors and raise HTTP exception
-        logger.error(f"Something went wrong: {str(e)}")
-        return JSONResponse(status_code=500, content={
-            "message": "Something went wrong",
-            "error": str(e)
-        })
+        logger.error(f"Unexpected error: {str(e)}")
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="An unexpected error occurred",
+            data={"error": str(e)}
+        ))
 
 
 def initiate_convesactions(user_id: int, body: InitiateCinversaction, db: DB):
@@ -90,33 +101,37 @@ def initiate_convesactions(user_id: int, body: InitiateCinversaction, db: DB):
             session.commit()
             session.refresh(new_data_source)
 
-        return JSONResponse(status_code=200, content={
-            "message": "Conversaction initiated",
-            "data": {
+        return JSONResponse(status_code=200, content=create_response(
+            status_code=200,
+            message="Conversaction initiated",
+            data={
                 "conversaction_id": new_data_source.id,
                 "conversaction_title": new_data_source.title,
                 "data_source_id": new_data_source.data_source_id,
             }
-        })
+        ))
 
     except HTTPException as he:
-        return JSONResponse(status_code=500, content={
-            "message": "Something went wrong",
-            "error": str(he)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="Something went wrong",
+            data={"error": str(he)}
+        ))
+        
     except SQLAlchemyError as e:
         logger.error(f"Database error: {str(e)}")
-        return JSONResponse(status_code=500, content={
-            "message": "Database error occurred",
-            "error": str(e)
-        })
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="Database error occurred",
+            data={"error": str(e)}
+        ))
     except Exception as e:
-        # Catch all other errors and raise HTTP exception
-        logger.error(f"Something went wrong: {str(e)}")
-        return JSONResponse(status_code=500, content={
-            "message": "Something went wrong",
-            "error": str(e)
-        })
+        logger.error(f"Unexpected error: {str(e)}")
+        return JSONResponse(status_code=500, content=create_response(
+            status_code=500,
+            message="An unexpected error occurred",
+            data={"error": str(e)}
+        ))
 
 
 def get_convesactions():

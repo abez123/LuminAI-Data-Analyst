@@ -68,3 +68,29 @@ export const del = async <T>(url: string, token?: string): Promise<T> => {
   const response = await apiClient.delete<T>(url, config);
   return response.data;
 };
+
+export const postStream = async <T>(
+  url: string, 
+  data: any, 
+  onDataChunk: (chunk: any) => void
+): Promise<T> => {
+  const user = getUser();
+  
+  const streamConfig: AxiosRequestConfig = {
+    headers: {
+      Authorization: `Bearer ${user?.access_token}`,
+      "Accept": "text/event-stream",
+      "Cache-Control": "no-cache",
+    },
+    responseType: 'stream',
+    onDownloadProgress: (progressEvent) => {
+      const data = progressEvent.event.target.response;
+      if (data && onDataChunk) {
+        onDataChunk(data);
+      }
+    }
+  };
+
+  const response = await apiClient.post<T>(url, data, streamConfig);
+  return response.data;
+};

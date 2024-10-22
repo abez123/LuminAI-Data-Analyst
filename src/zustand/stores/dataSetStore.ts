@@ -4,7 +4,7 @@ import { DataSources } from '../../interfaces/dataSourceInterface';
 
 export interface DataSetStore {
   dataSets: DataSources[] | null;
-  tables: string[] | null;
+  tables: string[] ;
   selectedModel:string ;
   setTables: (tables: string[]) => void;
   setModel: (model: string) => void;

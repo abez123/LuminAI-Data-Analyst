@@ -38,7 +38,7 @@ def execute_workflow(question: str, conversation_id: int, table_list: List[str],
                 for value in event.values():
                     ai_responses.append(value)
                     # Yield the streamed data to the client
-                    yield f"data: {value}\n\n"
+                    yield f"{value} /split/"
 
             # After streaming is complete, save all responses as one message
             full_response = "".join(str(response) for response in ai_responses)
@@ -54,14 +54,21 @@ def execute_workflow(question: str, conversation_id: int, table_list: List[str],
             except SQLAlchemyError as e:
                 logger.error(
                     f"Database error occurred while saving message: {str(e)}")
-                yield f"error: {str(e)}\n\n"
+                yield f"error: {str(e)} /split/"
             except Exception as e:
                 logger.error(f"Error occurred while saving message: {str(e)}")
-                yield f"error: {str(e)}\n\n"
+                yield f"error: {str(e)} /split/"
 
         except Exception as e:
             logger.error(f"Error occurred during streaming: {str(e)}")
-            yield f"error: {str(e)}\n\n"
+            yield f"error: {str(e)} /split/"
+        finally:
+            # Clean up resources
+            if app.stream and hasattr(app.stream, 'close'):
+                try:
+                    app.stream.close()
+                except Exception as e:
+                    logger.error(f"Error closing stream: {str(e)}")
     # Return the streaming response using event_stream generator
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 

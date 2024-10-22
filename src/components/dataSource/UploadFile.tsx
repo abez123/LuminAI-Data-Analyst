@@ -1,35 +1,38 @@
-import React, { useEffect } from 'react';
-import { BiUpload, BiFile, BiLink } from 'react-icons/bi';
+import React, { useState, useEffect } from 'react';
+import { BiUpload, BiFile, BiLink, BiLoaderAlt } from 'react-icons/bi';
 import { IoIosArrowForward } from 'react-icons/io';
 import { FiCommand } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { useGetDataSourcesMutation, useUploadSpreadsheetMutation } from '../../hooks/useDataSet';
 import dataSetStore from '../../zustand/stores/dataSetStore';
 import { DataSourceTableLoader } from '../loaders/DataSourceTableLoader';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useInitiateConversationMutation } from '../../hooks/useChat';
 
 type UploadFileProps = {
   setComponent: React.Dispatch<React.SetStateAction<string>>;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const UploadFile: React.FC<UploadFileProps> = ({ setComponent,setIsOpen }) => {
+const UploadFile: React.FC<UploadFileProps> = ({ setComponent, setIsOpen }) => {
+  const navigate = useNavigate();
+  const [dataSourceId, setDataSourceId] = useState<number | null>();
   const dataSets = dataSetStore((state) => state.dataSets);
-  const { mutate: uploadSpreadSheet, status: uploadSpreadSheetStatus } = useUploadSpreadsheetMutation();
-  const {
-    mutate: getDataSource,
-    status: dataSourceStatus,
-    isError,
-    error,
-    data,
-  } = useGetDataSourcesMutation();
-
-  console.log({
-    dataSourceStatus,
-    data,
-    error,
-    isError,
-  });
+  const { mutate: uploadSpreadSheet, status: uploadSpreadSheetStatus } =useUploadSpreadsheetMutation();
+  const { mutate: getDataSource, status: dataSourceStatus } = useGetDataSourcesMutation();
+  
+  // Redirect & close modal on conversation initiation
+  const onInitiated = (conversation_id: number) => {
+    navigate(`/chat/${dataSourceId}/${conversation_id}`);
+    setDataSourceId(null);
+    setIsOpen(false);
+    console.log(conversation_id);
+  };
+  // Reset state on chat initiation error
+  const onFailed = () => {
+    setDataSourceId(null);
+  };
+  const { mutate: initiateConversation, status: initiateConversationStatus } = useInitiateConversationMutation(onInitiated, onFailed);
 
   useEffect(() => {
     if (!dataSets) {
@@ -65,6 +68,11 @@ const UploadFile: React.FC<UploadFileProps> = ({ setComponent,setIsOpen }) => {
         toast.error('Invalid file type. Please upload Excel, CSV, PDF, or Text files only.');
       }
     }
+  };
+
+  const initiateChatConversation = (data_source_id: number) => {
+    setDataSourceId(data_source_id);
+    initiateConversation({ data_source_id });
   };
 
   return (
@@ -121,11 +129,11 @@ const UploadFile: React.FC<UploadFileProps> = ({ setComponent,setIsOpen }) => {
         ) : (
           <>
             {dataSets?.map((file, index) => (
-              <Link
-                to={`/chat/${file.id}`}
-                onClick={() => setIsOpen(false)}
+              <button
                 key={index}
-                className="bg-gray-50 rounded-lg p-3 mb-2 flex items-center cursor-pointer"
+                disabled={initiateConversationStatus === 'pending'}
+                onClick={() => initiateChatConversation(Number(file.id))}
+                className="bg-gray-50 rounded-lg p-3 mb-2 flex items-center cursor-pointer w-full"
               >
                 <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                   {file.type === 'url' ? (
@@ -138,14 +146,18 @@ const UploadFile: React.FC<UploadFileProps> = ({ setComponent,setIsOpen }) => {
                   <div className="flex justify-between items-center mb-1">
                     <div className="ml-4">
                       <div className="text-sm font-medium text-gray-900">{file.name}</div>
-                      <div className="text-sm text-gray-500 uppercase">{file.type}</div>
+                      <div className="text-sm text-gray-500 uppercase text-start">{file.type}</div>
                     </div>
                     <button>
-                      <IoIosArrowForward className="w-6 h-6 text-blue-600" />
+                      {dataSourceId === Number(file.id) ? (
+                        <BiLoaderAlt className="w-6 h-6 text-blue-600 animate-spin" />
+                      ) : (
+                        <IoIosArrowForward className="w-6 h-6 text-blue-600" />
+                      )}
                     </button>
                   </div>
                 </div>
-              </Link>
+              </button>
             ))}
           </>
         )}

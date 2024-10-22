@@ -30,7 +30,7 @@ const AppRoutes = () => {
     {
       element: <AuthWrapper />,
       children: [
-        { path: "/chat/:data_source_id", element: <Chat /> },
+        { path: "/chat/:data_source_id/:conversation_id", element: <Chat /> },
         { path: "/chat-history", element: <ChatHistory /> },
         { path: "/data-sources", element: <DataSource /> },
         { path: "/settings", element: <Settings /> },
