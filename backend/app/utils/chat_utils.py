@@ -11,7 +11,7 @@ from datetime import datetime
 from sqlalchemy import JSON
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException
-
+import json
 
 logger = get_logger(__name__)
 llm_instance = LLM()
@@ -37,8 +37,8 @@ def execute_workflow(question: str, conversation_id: int, table_list: List[str],
             for event in app.stream({"question": question, "schema": schema}):
                 for value in event.values():
                     ai_responses.append(value)
-                    # Yield the streamed data to the client
-                    yield f"{value} /split/"
+                    # Yield the streamed data as a JSON object
+                    yield json.dumps({"data": value}) + "\n"
 
             # After streaming is complete, save all responses as one message
             full_response = "".join(str(response) for response in ai_responses)
@@ -54,20 +54,22 @@ def execute_workflow(question: str, conversation_id: int, table_list: List[str],
             except SQLAlchemyError as e:
                 logger.error(
                     f"Database error occurred while saving message: {str(e)}")
-                yield f"error: {str(e)} /split/"
+                yield json.dumps({"error": str(e)}) + "\n"
+
             except Exception as e:
                 logger.error(f"Error occurred while saving message: {str(e)}")
-                yield f"error: {str(e)} /split/"
+                yield json.dumps({"error": str(e)}) + "\n"
 
         except Exception as e:
             logger.error(f"Error occurred during streaming: {str(e)}")
-            yield f"error: {str(e)} /split/"
+            yield json.dumps({"error": str(e)}) + "\n"
         finally:
             # Clean up resources
             if app.stream and hasattr(app.stream, 'close'):
                 try:
                     app.stream.close()
                 except Exception as e:
+                    yield json.dumps({"error": str(e)}) + "\n"
                     logger.error(f"Error closing stream: {str(e)}")
     # Return the streaming response using event_stream generator
     return StreamingResponse(event_stream(), media_type="text/event-stream")

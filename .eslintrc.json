@@ -15,6 +15,7 @@
     "project": "./tsconfig.json"
   },
   "rules": {
+    "filenames/match-regex": [2, "^[a-z][a-zA-Z0-9.]*$"],
     "prettier/prettier": ["error", {
       "endOfLine": "auto",
       "printWidth": 120,

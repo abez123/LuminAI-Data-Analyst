@@ -13,7 +13,7 @@ interface ErrorResponse {
     [key: string]: any; 
 }
 interface UseStreamChatOptions {
-  onSuccess?: () => void;
+  onSuccess?: (data:any) => void;
   onError?: (error: Error) => void;
   onStreamData?: (chunk: any) => void;
 }
@@ -42,16 +42,16 @@ export const useStreamChat = (options?: UseStreamChatOptions) => {
       return askQuestion(
         requestData,
         (chunks: any) => {
+          console.log(chunks);
           const parsedChunk = parseData(chunks);
-          console.log('Received chunks:', String(chunks));
-          console.log(parsedChunk);
-            options?.onStreamData?.(parsedChunk);
+          options?.onStreamData?.(parsedChunk);
         }
       );
     },
-    onSuccess: (data) => {
-      console.log('Stream data:', data);
-      options?.onSuccess?.();
+    onSuccess: (data:any) => {
+      // console.log('Stream data:', data);
+      const parsedChunk = parseData(data);
+      options?.onSuccess?.(parsedChunk);
     },
     onError: (error) => {
       console.error('Stream error:', error);

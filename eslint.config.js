@@ -19,6 +19,7 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      "filenames/match-regex": [2, "^[a-z][a-zA-Z0-9.]*$"],
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

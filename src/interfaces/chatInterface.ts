@@ -24,3 +24,36 @@ export interface InitiateConversationResponse {
   conversaction_title: string;
   data_source_id: number;
 }
+
+interface FormattedData {
+  label: string;
+  value: number;
+}
+export interface TableInfo {
+  table_name: string;
+  columns: string[];
+  noun_columns: string[];
+}
+export interface ProcessingMessage {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  parsed_question?: { is_relevant: boolean; relevant_tables: TableInfo[] };
+  sql_query?: string;
+  sql_valid?: boolean;
+  query_result?: string;
+  answer?: string;
+  recommended_visualization?: string;
+  reason?: string;
+  formatted_data_for_visualization?: FormattedData[];
+  error: string;
+  original: string;
+}
+
+export interface AiAnswer{
+  answer?: string,
+  formatted_data_for_visualization?: object[],
+  recommended_visualization?: string
+}
+export interface ConversationMessages{
+  user_question?: string,
+  ai_answer?: AiAnswer,
+}

@@ -5,6 +5,11 @@ from langchain_core.language_models import BaseLLM
 from langgraph.graph import START, END, StateGraph
 from app.langgraph.agents.sql_agent import SQLAgent
 from app.config.db_config import DB
+from app.config.logging_config import get_logger
+import datetime
+from decimal import Decimal
+
+logger = get_logger(__name__)
 
 
 def clean_sql_query(query):
@@ -58,18 +63,49 @@ class WorkflowManager:
         self.db = db
         self.sql_agent = SQLAgent(llm)
 
+    def serialize_row(self, row):
+        """Helper method to convert SQLAlchemy Row object to dictionary"""
+        if hasattr(row, '_asdict'):  # For Row/RowProxy objects
+            return {key: self.serialize_value(value) for key, value in row._asdict().items()}
+        elif hasattr(row, '__dict__'):  # For ORM objects
+            return {key: self.serialize_value(value) for key, value in row.__dict__.items()
+                    if not key.startswith('_')}
+        elif isinstance(row, (list, tuple)):  # For raw result tuples
+            return [self.serialize_value(value) for value in row]
+        return row
+
+    def serialize_value(self, value):
+        """Helper method to serialize individual values"""
+        if isinstance(value, datetime.datetime):
+            return value.isoformat()
+        elif isinstance(value, datetime.date):
+            return value.isoformat()
+        elif isinstance(value, Decimal):
+            return float(value)
+        elif isinstance(value, bytes):
+            return value.decode('utf-8')
+        elif hasattr(value, '_asdict'):  # Handle nested Row objects
+            return self.serialize_row(value)
+        return value
+
     def run_sql_query(self, state: Dict[str, Any]) -> Dict[List, Any]:
         print("========== run_sql_query ==========")
         query = state['sql_query']
         if query == "NOT_RELEVANT":
             return {"query_result": []}
+
         # Clean query
         cleaned_query = clean_sql_query(query)
-
         print("SQL QUERY :", cleaned_query)
-        result = self.db.execute_query(cleaned_query)
-        # Convert RowProxy to dict
-        return {"query_result": result}
+
+        try:
+            result = self.db.execute_query(cleaned_query)
+            # Convert result to JSON-serializable format
+            serialized_result = [self.serialize_row(row) for row in result]
+            return {"query_result": serialized_result}
+        except Exception as e:
+            logger.error(f"Error executing query: {str(e)}")
+            return {"query_result": [], "error": str(e)}
 
     def create_workflow(self) -> StateGraph:
         """Create and configure the workflow graph."""
