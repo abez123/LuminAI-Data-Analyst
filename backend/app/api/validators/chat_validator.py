@@ -10,6 +10,7 @@ class AskQuestion(BaseModel):
         None, description="List of selected tables (optional)")
     dataset_id: int = Field(..., description="Dataset ID to query")
     conversaction_id: int = Field(..., description="Conversaction ID to query")
+    llm_model: str = Field(..., description="Model name for LLM")
 
     class Config:
         json_schema_extra = {
@@ -18,7 +19,8 @@ class AskQuestion(BaseModel):
                 "type": "url",
                 "selected_tables": ["sales", "products"],
                 "dataset_id": "123",
-                "conversaction_id": "123"
+                "conversaction_id": "123",
+                "llm_model":"gemma2-9b-it"
             }
         }
 

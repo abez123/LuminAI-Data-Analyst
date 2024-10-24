@@ -42,14 +42,16 @@ async def ask_question(id: int, body: AskQuestion, db: DB):
                 conversation_id=body.conversaction_id,
                 db_url=data_source.connection_url,
                 table_list=body.selected_tables,
-                system_db=db
+                system_db=db,
+                llm_model=body.llm_model
             )
         elif body.type == "spreadsheet":
             return execute_workflow(
                 question=body.question,
                 conversation_id=body.conversaction_id,
                 table_list=[data_source.table_name],
-                system_db=db
+                system_db=db,
+                llm_model=body.llm_model
             )
         else:
             print("execure_document_chat")

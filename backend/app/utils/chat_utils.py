@@ -18,13 +18,13 @@ llm_instance = LLM()
 vectorDB_instance = VectorDB()
 
 
-def execute_workflow(question: str, conversation_id: int, table_list: List[str], system_db: Optional[DB] = None, db_url: Optional[str] = None):
+def execute_workflow(question: str, conversation_id: int, table_list: List[str],llm_model:Optional[str] = "gemma2-9b-it", system_db: Optional[DB] = None, db_url: Optional[str] = None):
 
     db: DB = DB(db_url)
     if not db_url:
         db: DB = system_db
 
-    llm = llm_instance.groq("gemma2-9b-it")
+    llm = llm_instance.groq(llm_model)
     schema = db.get_schemas(table_names=table_list)
 
     workflow = WorkflowManager(llm, db)

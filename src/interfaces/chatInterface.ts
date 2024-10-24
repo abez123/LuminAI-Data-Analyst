@@ -5,7 +5,7 @@ export interface ChatRequestBody {
   conversaction_id: number;
   dataset_id: number;
   selected_tables: string[];
-
+  llm_model:string
 }
 
 export type StreamCallback = (chunk: string) => void;

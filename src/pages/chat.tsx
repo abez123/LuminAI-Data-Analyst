@@ -20,6 +20,7 @@ export default function Chat() {
   const [processingMessages, setProcessingMessages] = useState<ProcessingMessage[]>([]);
 
   const tables = dataSetStore((state) => state.tables);
+  const selectedModel = dataSetStore((state) => state.selectedModel);
   // Get the data_source_id from URL parameters
   const { data_source_id,conversation_id } = useParams();
   const {
@@ -69,11 +70,12 @@ export default function Chat() {
       type: "url",
       conversaction_id: Number(conversation_id),
       dataset_id: Number(data_source_id),
-      selected_tables:tables
+      selected_tables:tables,
+      llm_model:selectedModel
     })
   };
 
-  // console.log(isProcessing, processingMessages);
+  console.log(selectedModel);
 
   return (
     <div className="flex flex-col py-8 pr-8 h-screen">
@@ -106,16 +108,16 @@ export default function Chat() {
                         <TypewriterWithHighlight text={message.ai_answer.answer || ""} />
                       </div>
 
-{
-  message?.ai_answer?.formatted_data_for_visualization && (
-    <div className="w-full h-[400px]">
-    <ChartComponent
-      type={message?.ai_answer?.recommended_visualization || ""}
-      data={message?.ai_answer?.formatted_data_for_visualization}
-    />
-  </div>
-  )
-}
+                        {
+                          message?.ai_answer?.formatted_data_for_visualization && (
+                            <div className="w-full h-[400px]">
+                            <ChartComponent
+                              type={message?.ai_answer?.recommended_visualization || ""}
+                              data={message?.ai_answer?.formatted_data_for_visualization}
+                            />
+                          </div>
+                          )
+                        }
 
                     </div>
                   )}

@@ -84,11 +84,8 @@ const SelectDataset: React.FC = () => {
             >
               <option value="">Select LLM Model</option>
               <option value="gemma2-9b-it">gemma2-9b</option>
-              <option value="gemma-7b-it">gemma-7b</option>
               <option value="mixtral-8x7b-32768">mixtral-8x7b</option>
               <option value="llama3-8b-8192">llama3-8b</option>
-              <option value="llama3-8b-8192">llama3-70b</option>
-              <option value="lama3-groq-70b-8192-tool-use-preview">lama3-groq-70b</option>
             </select>
             <div
               className={`mr-l pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700`}
