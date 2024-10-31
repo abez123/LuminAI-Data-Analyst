@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BiSend } from 'react-icons/bi';
 import { BsStars } from 'react-icons/bs';
 import Steps from '../components/steps/Steps';
@@ -16,10 +16,13 @@ export default function Chat() {
 
   // const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [question, setQuestion] = useState('');
+  const [datasetType, setDatasetType] = useState<string>();
   const [messages, setMessages] = useState<ConversationMessages[]>([]);
   const [processingMessages, setProcessingMessages] = useState<ProcessingMessage[]>([]);
 
   const tables = dataSetStore((state) => state.tables);
+  const dataSets = dataSetStore((state) => state.dataSets);
+  const setTables = dataSetStore((state) => state.setTables);
   const selectedModel = dataSetStore((state) => state.selectedModel);
   // Get the data_source_id from URL parameters
   const { data_source_id,conversation_id } = useParams();
@@ -55,9 +58,14 @@ export default function Chat() {
     }
   });
 
-  // console.log({data_source_id,conversation_id})
-  console.log(messages);
-
+  useEffect(() => {
+    const filteredDataSet = dataSets?.filter((dataSet) => dataSet.id === Number(data_source_id))
+    if(filteredDataSet?.length > 0){
+      setTables([filteredDataSet[0]?.table_name || '']) 
+      setDatasetType(filteredDataSet[0]?.type) 
+    }
+  }, [data_source_id])
+  
 
   const askQuestion = () => {
     // Safely spread messages, handling empty array case
@@ -67,7 +75,7 @@ export default function Chat() {
     setQuestion('');
     sendMessage({
       question: question,
-      type: "url",
+      type: datasetType || 'url',
       conversaction_id: Number(conversation_id),
       dataset_id: Number(data_source_id),
       selected_tables:tables,
@@ -76,6 +84,7 @@ export default function Chat() {
   };
 
   console.log(selectedModel);
+  console.log("TABLES",tables);
 
   return (
     <div className="flex flex-col py-8 pr-8 h-screen">

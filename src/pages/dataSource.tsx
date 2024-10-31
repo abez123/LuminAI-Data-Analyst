@@ -1,5 +1,6 @@
 import React,{useEffect} from 'react';
 import { BiFile, BiLink } from 'react-icons/bi';
+import { BsFillFileEarmarkSpreadsheetFill } from "react-icons/bs";
 import { useGetDataSourcesMutation } from '../hooks/useDataSet';
 import dataSetStore from '../zustand/stores/dataSetStore';
 import {DataSourceTableLoader} from '../components/loaders/DataSourceTableLoader';
@@ -41,6 +42,8 @@ const DataSource: React.FC = () => {
                           {
                             file.type === "url"?
                             <BiLink className="h-6 w-6 text-blue-600" />
+                            :file.type === "spreadsheet"?
+                            <BsFillFileEarmarkSpreadsheetFill className="h-6 w-6 text-blue-600" />
                             :
                             <BiFile className="h-6 w-6 text-blue-600" />
                           }
@@ -54,7 +57,9 @@ const DataSource: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {file.type === "url"?file.connection_url: file?.name}
+                    {file.type === "url"?
+                    file.connection_url
+                    :file.type === "spreadsheet"? file?.table_name :file?.name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {file?.created_at}

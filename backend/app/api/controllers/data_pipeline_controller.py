@@ -42,6 +42,9 @@ async def upload_spreadsheet(id: int, file: UploadFile, db: DB) -> JSONResponse:
         else:
             df = pd.read_excel(buffer)
 
+        # Convert all column names to lowercase and replace spaces with underscores
+        df.columns = df.columns.str.lower().str.replace(' ', '_')
+
         # Generate a unique table name
         base_name = file.filename.rsplit('.', 1)[0].lower()
         table_name = f"{base_name}_{uuid.uuid4().hex[:8]}"
