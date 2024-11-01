@@ -1,5 +1,9 @@
 <p align="center">
-  <img src="./images/logo.png" alt="LUMIN Logo" width="400"/>
+  <img src="./images/logo.png" 
+       alt="LUMIN Logo" 
+       width="400" 
+       height="150" 
+       style="object-fit: cover; object-position: center;"/>
 </p>
 
 LUMIN is an intelligent data analysis platform that transforms how you interact with your data. Using LLM, LUMIN enables you to ask analytical questions about your data in plain English and receive insights through beautiful visualizations and clear explanations.
@@ -21,13 +25,23 @@ cd lumin_ai
 
 ```
 
-### Start Project
+### Start Container
 ```bash
 # Start the containers
 docker compose up --build
 ```
 
-### Remove Project
+## 🔌 Local Development URLs
+
+After starting the container, you can access:
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| Frontend | `http://localhost:3000` | React application interface |
+| Backend | `http://localhost:8000` | FastAPI server |
+| API Docs | `http://localhost:8000/docs` | Swagger API documentation |
+
+### Remove Container
 
 ```bash
 # Stop and remove containers
@@ -104,7 +118,7 @@ docker compose down
 
 ## 🔄 Workflow Architecture
 
-##### High level flow
+### High level flow
 ```mermaid
 flowchart TD
     Start([Start]) --> InputDoc{Document Type?}
@@ -152,8 +166,7 @@ flowchart TD
 
 ```
 
-##### Lang graph flow
-The system uses a state-based workflow to process queries and generate appropriate SQL or conversational responses:
+### Lang graph flow
 
 ```mermaid
 flowchart TD
@@ -235,7 +248,7 @@ erDiagram
 4. Push to the branch (`git push origin feature_name`)
 5. Open a Pull Request
 
-#### Features You Can Contribute
+### Features You Can Contribute
 We welcome contributions! Here are some exciting features you can help implement:
 
 **💭 Contextual Chat Enhancement:**
