@@ -21,8 +21,9 @@ async def initiate_convesactions(request: Request, body: InitiateCinversaction, 
 
 
 @chat_router.post("/get-conversations")
-async def get_conversactions():
-    return chat_controller.get_convesactions()
+async def get_conversactions(request: Request, db: DB = Depends(get_db)):
+    user_id = request.state.user_id
+    return chat_controller.get_convesactions(user_id, db)   
 
 
 @chat_router.post("/get-conversations-history")
