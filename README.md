@@ -1,10 +1,8 @@
-<p align="center">
-  <img src="./images/logo.png" 
-       alt="LUMIN Logo" 
-       width="400" 
-       height="150" 
-       style="object-fit: cover; object-position: center;"/>
-</p>
+<div align="center">
+  <h1>
+    <b>LUMIN</b>
+  </h1>
+</div>
 
 LUMIN is an intelligent data analysis platform that transforms how you interact with your data. Using LLM, LUMIN enables you to ask analytical questions about your data in plain English and receive insights through beautiful visualizations and clear explanations.
 
@@ -188,7 +186,7 @@ flowchart TD
     FormatResults --> End([END])
     FormatViz --> End
     ConvResponse --> End
-    
+
     classDef conditional fill:#f9f,stroke:#333,stroke-width:2px
     classDef process fill:#bbf,stroke:#333,stroke-width:1px
     class ShouldContinue conditional
