@@ -57,3 +57,32 @@ export interface ConversationMessages{
   user_question?: string,
   ai_answer?: AiAnswer,
 }
+
+export interface Conversations {
+  id: number;
+  title: string;
+  created_at:string
+}
+
+export interface ConversationsResponse {
+  conversations: Conversations[];
+}
+
+// For the content object
+export interface MessageContent {
+  question?: string;
+  answer?: ProcessingMessage[];
+}
+
+// For the main message object
+interface Message {
+  id: number;
+  role: 'user' | 'assistant'; // Using literal type for role if those are the only options
+  content: MessageContent;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConversationHistoryResponse {
+  messages: Message[];
+}

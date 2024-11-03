@@ -39,14 +39,14 @@ const getAuthHeader = (token?: string): AxiosRequestConfig => {
   return {};
 };
 
-export const get = async <T>(url: string, ): Promise<T> => {
+export const get = async <T>(url: string, token?: string, ): Promise<T> => {
   const user = getUser();
   const config = getAuthHeader(user?.access_token);
   const response = await apiClient.get<T>(url,createAxiosConfig(config));
   return response.data;
 };
 
-export const post = async <T>(url: string, data: any, config?:any): Promise<T> => {
+export const post = async <T>(url: string, data?: any, config?:any): Promise<T> => {
   const user = getUser();
   if(config){
     config.headers["Authorization"] = user?.access_token;

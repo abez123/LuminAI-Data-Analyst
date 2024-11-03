@@ -12,6 +12,7 @@ from app.api.db.data_sources import DataSources
 from app.api.db.chat_history import (Conversations, Messages)
 from datetime import datetime
 from app.utils.response_utils import create_response
+import json
 
 # Set up logging
 logger = get_logger(__name__)
@@ -241,5 +242,77 @@ def get_convesactions(user_id: int, db: DB):
         )
 
 
-def get_conversaction_history(user_id: int, conversaction_id: int, db: DB):
-    pass
+def get_conversaction_history(conversaction_id: int, db: DB):
+    try:
+        with db.session() as session:
+            query = (
+                select(
+                    Messages.id,
+                    Messages.role,
+                    Messages.content,
+                    func.to_char(Messages.created_at,
+                                 'YYYY-MM-DD HH24:MI:SS').label('created_at'),
+                    func.to_char(Messages.updated_at,
+                                 'YYYY-MM-DD HH24:MI:SS').label('updated_at')
+                )
+                .where(Messages.conversation_id == conversaction_id)
+                .order_by(Messages.created_at.asc())
+            )
+
+            result = session.execute(query).mappings().all()
+
+            messages = []
+            for row in result:
+                message_dict = dict(row)
+
+                # Ensure content is JSON serializable
+                content = message_dict['content']
+                if isinstance(content, str):
+                    try:
+                        message_dict['content'] = json.loads(content)
+                    except json.JSONDecodeError:
+                        message_dict['content'] = content
+
+                messages.append(message_dict)
+
+            return JSONResponse(
+                status_code=200,
+                content=create_response(
+                    status_code=200,
+                    message="Messages fetched successfully",
+                    data={"messages": messages}
+                )
+            )
+
+    except HTTPException as he:
+        logger.error(f"HTTP error: {str(he)}")
+        return JSONResponse(
+            status_code=he.status_code,
+            content=create_response(
+                status_code=he.status_code,
+                message="Request failed",
+                data={"error": str(he)}
+            )
+        )
+
+    except SQLAlchemyError as e:
+        logger.error(f"Database error: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content=create_response(
+                status_code=500,
+                message="Database error occurred",
+                data={"error": str(e)}
+            )
+        )
+
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content=create_response(
+                status_code=500,
+                message="An unexpected error occurred",
+                data={"error": str(e)}
+            )
+        )

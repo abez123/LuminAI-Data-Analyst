@@ -2,12 +2,13 @@
 
 // import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { ChatRequestBody, InitiateConversationRequestBody, InitiateConversationResponse } from "../interfaces/chatInterface";
+import { ChatRequestBody, ConversationHistoryResponse, ConversationsResponse, InitiateConversationRequestBody, InitiateConversationResponse, MessageContent, ProcessingMessage } from "../interfaces/chatInterface";
 import { AxiosError } from 'axios';
 import {ApiResponse} from "../interfaces/globalInterfaces";
-import { askQuestion, initiateConversation } from '../zustand/apis/chatApi';
+import { askQuestion, getConversationHistory, getConversations, initiateConversation } from '../zustand/apis/chatApi';
 import { toast } from 'react-toastify';
 import { parseData } from '../utils/utils';
+import chatStore from '../zustand/stores/chatStore';
 
 interface ErrorResponse {
     [key: string]: any; 
@@ -16,6 +17,11 @@ interface UseStreamChatOptions {
   onSuccess?: (data:any) => void;
   onError?: (error: Error) => void;
   onStreamData?: (chunk: any) => void;
+}
+
+interface ConversationMessageHistoryOptions {
+  onSuccess?: (data:MessageContent[]) => void;
+  onError?: (error: Error) => void;
 }
 
   export const useInitiateConversationMutation = (
@@ -34,6 +40,47 @@ interface UseStreamChatOptions {
           toast.error(error.response?.data.message)
         },
     })
+}
+
+export const useGetConversationsMutation = () => {
+  const setChats = chatStore((state) => state.setChats);
+  return useMutation<ApiResponse<ConversationsResponse>, AxiosError<ErrorResponse>,void>({
+    mutationFn: getConversations,
+    onSuccess: (response) => {
+      console.log(response.data.conversations);
+      setChats(response.data.conversations)
+    },
+    onError: (error) => {
+      console.log(error.response?.data);
+      toast.error(error.response?.data.message);
+    }
+  });
+}
+
+export const useGetConversationHistoryMutation = (options?: ConversationMessageHistoryOptions) => {
+  return useMutation<ApiResponse<ConversationHistoryResponse>, AxiosError<ErrorResponse>,number>({
+    mutationFn: getConversationHistory,
+    onSuccess: (response) => {
+      console.log(response.data);
+      const conversationHistory:MessageContent[] = []
+      response.data.messages.forEach((message) => {
+        if(message?.content?.question){
+          conversationHistory.push({question: message.content.question})
+        }else{
+          const answer = message.content.answer?.map((data:any)=>{
+             const parsedString = JSON.parse(data)
+             return parsedString
+          })
+          conversationHistory.push({answer})
+        }
+      })
+      options?.onSuccess?.(conversationHistory)
+    },
+    onError: (error) => {
+      console.log(error.response?.data);
+      toast.error(error.response?.data.message);
+    }
+  });
 }
 
 export const useStreamChat = (options?: UseStreamChatOptions) => {

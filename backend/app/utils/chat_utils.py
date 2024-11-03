@@ -20,12 +20,21 @@ vectorDB_instance = VectorDB()
 
 def execute_workflow(question: str, conversation_id: int, table_list: List[str],llm_model:Optional[str] = "gemma2-9b-it", system_db: Optional[DB] = None, db_url: Optional[str] = None):
 
-    if not system_db:
-        logger.info(f"SYSTEM DB")
-        db: DB = DB(db_url)
-    if not db_url:
-        logger.info(f"Existing DB Connection")
-        db: DB = system_db
+    # Initialize db variable
+    db: DB
+
+
+    # Case 1: Use system_db if provided
+    if db_url is None:
+        logger.info("Using existing DB Connection")
+        db = system_db
+    # Case 2: Use db_url if provided
+    elif db_url is not None:
+        logger.info("Creating new SYSTEM DB connection")
+        db = DB(db_url)
+    else:
+        raise ValueError("Either system_db or db_url must be provided")
+
 
     llm = llm_instance.groq(llm_model)
     schema = db.get_schemas(table_names=table_list)
@@ -39,19 +48,16 @@ def execute_workflow(question: str, conversation_id: int, table_list: List[str],
         try:
             for event in app.stream({"question": question, "schema": schema}):
                 for value in event.values():
-                    ai_responses.append(value)
+                    ai_responses.append(json.dumps(value))
                     # Yield the streamed data as a JSON object
                     yield json.dumps({"data": value}) + "\n"
 
             # After streaming is complete, save all responses as one message
-            full_response = "".join(str(response) for response in ai_responses)
-            logger.info(f"Full_AI_Response: {full_response}")
-
             try:
                 save_message(
                     conversation_id=conversation_id,
                     role="assistant",
-                    content={"answer": full_response},
+                    content=json.dumps({"answer":ai_responses}),
                     db=system_db
                 )
             except SQLAlchemyError as e:

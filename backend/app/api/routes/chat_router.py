@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import Path, APIRouter, Request, Depends
 from app.api.controllers import chat_controller
 from app.api.validators.chat_validator import AskQuestion, InitiateCinversaction
 from app.dependencies.database import get_db
@@ -26,6 +26,6 @@ async def get_conversactions(request: Request, db: DB = Depends(get_db)):
     return chat_controller.get_convesactions(user_id, db)   
 
 
-@chat_router.post("/get-conversations-history")
-async def get_conversaction_history():
-    return chat_controller.get_conversaction_history()
+@chat_router.post("/get-conversations-history/{conversation_id}")
+async def get_conversaction_history(conversation_id: int = Path(..., title="Conversation ID"), db: DB = Depends(get_db)):
+    return chat_controller.get_conversaction_history(conversation_id, db)
