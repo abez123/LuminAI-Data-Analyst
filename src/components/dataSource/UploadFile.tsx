@@ -63,6 +63,7 @@ const UploadFile: React.FC<UploadFileProps> = ({ setComponent, setIsOpen }) => {
           uploadSpreadSheet(file);
         } else {
           console.log('Upload document');
+          toast.error('Chat with Text & PDF file is not ready yet, coming soon.');
         }
       } else {
         toast.error('Invalid file type. Please upload Excel, CSV, PDF, or Text files only.');

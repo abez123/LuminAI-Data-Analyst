@@ -22,6 +22,36 @@ git clone https://github.com/spandan114/LuminAI-Data-Analyst.git
 cd lumin_ai
 
 ```
+### 🔐 Environment Setup
+
+1. Navigate to the backend directory and create your environment file:
+```bash
+cd backend
+cp .env.example .env
+```
+
+2. Configure the following environment variables in your `.env` file:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `OPENAI_API_KEY` | Your OpenAI API key for ChatGPT integration | "sk-..." |
+| `GROQ_API_KEY` | Your Groq API key for Groq LLM integration | "gsk-..." |
+| `SECRET_KEY` | Secret key for JWT token encryption | "your-secret-key" |
+| `DATABASE_URL` | PostgreSQL connection URL | "postgresql://lumin:root@db:5432/lumin" |
+| `LANGCHAIN_PROJECT` | Project name for LangChain tracking (optional) | "lumin" |
+| `HF_TOKEN` | Hugging Face API token for model access | "hf_..." |
+
+### Notes:
+- For local development using Docker, keep the `DATABASE_URL` as is - Docker Compose will handle the connection
+- The project uses Groq as the primary LLM provider - a Groq API key is required for full functionality
+- `SECRET_KEY` should be a secure random string in production
+- While the codebase supports OpenAI and Hugging Face as alternative LLM providers, they are optional, you can configure the methods to use different llm provider
+- Default database credentials can be modified in the `docker-compose.yml` file
+
+### Getting API Keys:
+- OpenAI API: https://platform.openai.com/
+- Groq API: https://console.groq.com/
+- Hugging Face: https://huggingface.co/settings/tokens
 
 ### Start Container
 ```bash
