@@ -59,7 +59,7 @@ const SelectDataset: React.FC = () => {
                   value={selectedDataSource}
                   onChange={(e) => setSelectedDataSource(e.target.value)}
                 >
-                  <option value="">Select Tables</option>
+                  <option value="">Selected Tables</option>
                   {
                     tables?.map((table) => (
                       <option key={table} value={table}>{table}</option>

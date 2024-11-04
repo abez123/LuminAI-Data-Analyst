@@ -6,6 +6,12 @@
 
 LUMIN is an intelligent data analysis platform that transforms how you interact with your data. Using LLM, LUMIN enables you to ask analytical questions about your data in plain English and receive insights through beautiful visualizations and clear explanations.
 
+<img src="./assets/demo_ss.png" alt="lumin demo"/>
+
+## 🙃 Demo
+
+<video src="./assets/lumin_demo.mp4" controls="controls" muted="muted" playsinline="playsinline">
+</video>
 
 ## 🚀 Quick Start
 
@@ -94,7 +100,9 @@ docker compose down
     - Easy to extend with new LLM providers
 
 - 🤖 Natural Language Processing: Ask questions in plain English about your data
-
+- 💾 Database Support:
+    - Full support for tabular databases
+    - NoSQL databases not currently supported
 - 📊 Smart Visualizations: Automatically generates relevant charts and graphs
 
 - 🔍 Intelligent Analysis: Provides deep insights and patterns in your data
@@ -293,6 +301,12 @@ We welcome contributions! Here are some exciting features you can help implement
 - Add functionality to upload PDF or Text document
 - Integrate PDF and Text file analysis in the frontend
 
+**💾 Implement NoSQL Database Support**
+*Status:* Needs Implementation
+- Add MongoDB integration for for analysis
+- Implement schema-less data handling
+- Add support for nested JSON structures
+
 **⚙️ User Settings Dashboard:**
 *Status:* Needs Implementation
 
@@ -302,7 +316,103 @@ We welcome contributions! Here are some exciting features you can help implement
 - LLM platform selection with configuration
 - Model selection based on chosen platform
 
+## Testing Dataset
 
+In the project Demo i used the [Brazilian E-commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce), available on Kaggle. The dataset includes information about:
+
+- Customer and orders
+- Order items and payments
+- Product details
+- Seller information
+- Geolocation data
+- Order reviews
+- Product category translations
+
+### Data Loading
+
+The following code demonstrates how to load the Olist dataset into a SQLite database:
+
+1. Download the dataset from [Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
+2. Extract the files to an `/ecommerce` directory
+3. Run the data loading script to create and populate the SQLite database
+
+```python
+import os
+import pandas as pd
+from sqlalchemy import create_engine
+
+def insert_data_to_sqlite(file_path):
+    # Extract the file name without extension to use as table name
+    file_name = os.path.splitext(os.path.basename(file_path))[0]
+
+    # Read the data (change this to pd.read_excel() for Excel files)
+    data = pd.read_csv(file_path)
+
+    # Create a SQLite database (or connect if it already exists)
+    engine = create_engine('sqlite:///lumin.db')
+
+    # Insert data into the SQLite database with the table name as the file name
+    data.to_sql(file_name, con=engine, if_exists='replace', index=False)
+    print(
+        f"Data from {file_path} has been inserted into the '{file_name}' table in the 'lumin.db' database.")
+
+# List of dataset files
+ecom_data = [
+    "olist_customers_dataset.csv",
+    "olist_geolocation_dataset.csv",
+    "olist_order_items_dataset.csv",
+    "olist_order_payments_dataset.csv",
+    "olist_order_reviews_dataset.csv",
+    "olist_orders_dataset.csv",
+    "olist_products_dataset.csv",
+    "olist_sellers_dataset.csv",
+    "product_category_name_translation.csv"
+]
+
+# Load each dataset
+for data in ecom_data:
+    path = (f"/ecommerce/{data}")
+    file_data = os.path.abspath(path)
+    insert_data_to_sqlite(file_data)
+    print(file_data)
+```
+
+## Multiple LLM provider setup
+
+The project supports multiple LLM providers through a flexible switching mechanism:
+
+```python
+from langchain_groq import ChatGroq
+from langchain_openai import OpenAI
+from langchain_ollama.llms import OllamaLLM
+from app.config.env import (GROQ_API_KEY, OPENAI_API_KEY)
+
+class LLM:
+    def __init__(self):
+        self.llm = None
+        self.platform = None
+
+    def groq(self, model: str):
+        self.llm = ChatGroq(groq_api_key=GROQ_API_KEY, model=model)
+        self.platform = "Groq"
+        return self.llm
+
+    def openai(self, model: str):
+        self.llm = OpenAI(api_key=OPENAI_API_KEY, model=model)
+        self.platform = "OpenAi"
+        return self.llm
+
+    def ollama(self, model: str):
+        self.llm = OllamaLLM(model=model)
+        self.platform = "Ollama"
+        return self.llm
+
+    def get_llm(self):
+        return self.llm
+
+    def invoke(self, prompt: str):
+        return self.llm.invoke(prompt)
+```
 
 ## 📄 License
 
