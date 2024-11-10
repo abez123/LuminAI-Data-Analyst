@@ -49,9 +49,9 @@ generate_sql_query_prompt = ChatPromptTemplate.from_messages([
     2. Ensure the SQL query answers the question using only two or three columns in the result.
     3. If there isn't enough information to generate a query, return "NOT_ENOUGH_INFO".
     4. Always enclose table and column names in backticks (`) for SQL syntax consistency.
-    5. Skip rows where any column is NULL, empty (""), or contains "N/A".
+    5. Skip rows where any column is NULL, empty (''), or contains 'N/A'.
     6. Use the exact spellings of nouns from the unique nouns list, but only include nouns that match actual column names in the schema.
-
+    
     Here are some examples:
 
     1. **What is the top selling product?**
@@ -61,8 +61,8 @@ generate_sql_query_prompt = ChatPromptTemplate.from_messages([
        SELECT `product_name`, SUM(`quantity`) AS `total_quantity`
        FROM `sales`
        WHERE `product_name` IS NOT NULL AND `quantity` IS NOT NULL 
-       AND `product_name` != "" AND `quantity` != "" 
-       AND `product_name` != "N/A" AND `quantity` != "N/A" 
+       AND `product_name` != '' AND `quantity` != '' 
+       AND `product_name` != 'N/A' AND `quantity` != 'N/A' 
        GROUP BY `product_name` 
        ORDER BY `total_quantity` DESC 
        LIMIT 1```
@@ -74,10 +74,10 @@ generate_sql_query_prompt = ChatPromptTemplate.from_messages([
          SELECT `product_name`, SUM(`quantity` * `price`) AS `total_revenue`
          FROM `sales`
          WHERE `product_name` IS NOT NULL AND `quantity` IS NOT NULL 
-         AND `price` IS NOT NULL AND `product_name` != "" 
-         AND `quantity` != "" AND `price` != "" 
-         AND `product_name` != "N/A" AND `quantity` != "N/A" 
-         AND `price` != "N/A"
+         AND `price` IS NOT NULL AND `product_name` != '' 
+         AND `quantity` != '' AND `price` != '' 
+         AND `product_name` != 'N/A' AND `quantity` != 'N/A' 
+         AND `price` != 'N/A'
          GROUP BY `product_name`
          ORDER BY `total_revenue` DESC
          ```
@@ -90,8 +90,8 @@ generate_sql_query_prompt = ChatPromptTemplate.from_messages([
          SUM(`quantity`) * 100.0 / (SELECT SUM(`quantity`) FROM `sales`) AS `market_share`
          FROM `sales`
          WHERE `product_name` IS NOT NULL AND `quantity` IS NOT NULL 
-         AND `product_name` != "" AND `quantity` != "" 
-         AND `product_name` != "N/A" AND `quantity` != "N/A"
+         AND `product_name` != '' AND `quantity` != '' 
+         AND `product_name` != 'N/A' AND `quantity` != 'N/A'
          GROUP BY `product_name`
          ORDER BY `market_share` DESC
          ```
@@ -113,7 +113,7 @@ generate_sql_query_prompt = ChatPromptTemplate.from_messages([
          ```sql
          SELECT `income`, COUNT(*) AS `count`
          FROM `users`
-         WHERE `income` IS NOT NULL AND `income` != "" AND `income` != "N/A"
+         WHERE `income` IS NOT NULL AND `income` != '' AND `income` != 'N/A'
          GROUP BY `income`
         ```
 

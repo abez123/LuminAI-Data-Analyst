@@ -66,13 +66,19 @@ export const DataBarChart: React.FC<{
   const dataKeys = Array.from(new Set(data.values.map(series => series.label)));
 
   // Transform the data into the format Recharts expects
+  // const transformedData = data.labels.map((label, index) => ({
+  //   name: label,
+  //   ...data.values.reduce((acc, series) => ({
+  //     ...acc,
+  //     [series.label]: series.data[index]
+  //   }), {})
+  // }));
+
   const transformedData = data.labels.map((label, index) => ({
     name: label,
-    ...data.values.reduce((acc, series) => ({
-      ...acc,
-      [series.label]: series.data[index]
-    }), {})
-  }));
+    [data.values[index].label]: data.values[index].data
+  })) || [{}];
+  
 
   // Calculate max label length for left margin in horizontal mode
   const maxLabelLength = Math.max(...data.labels.map(label => label.length));
