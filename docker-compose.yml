@@ -39,7 +39,7 @@ services:
       POSTGRES_PASSWORD: root
       POSTGRES_DB: lumin
     ports:
-      - "5430:5432"
+      - "5431:5432"
 
 networks:
   default:
