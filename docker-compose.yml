@@ -10,7 +10,7 @@ services:
     volumes:
       - ./backend:/app
     ports:
-      - "8000:8000"
+      - "8002:8000"
     environment:
       - PYTHONPATH=/app
       - PYTHONDONTWRITEBYTECODE=1
